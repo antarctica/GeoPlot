@@ -179,12 +179,12 @@ class Map:
             loc = [wpt['Lat'], wpt['Long']]
             folium.Marker(
                 location=loc,
-                icon=plugins.BeautifyIcon(icon='circle',
+                icon=plugins.BeautifyIcon(icon=p['icon'],
                                                 border_color='transparent',
                                                 background_color='transparent',
                                                 border_width=p['line_width'],
                                                 text_color=p['color'],
-                                                inner_icon_style='margin:0px;font-size:0.8em'),
+                                                inner_icon_style='margin:0px;font-size:{}em'.format(p["marker_size"])),
                 popup="<b>{} [{:4f},{:4f}]</b>".format(wpt['Name'],loc[0],loc[1]),
             ).add_to(wpts)    
 
@@ -212,6 +212,8 @@ class Map:
 
         p = paramsObject('Maps',predefined=predefined,**kwargs)
         self.p = p
+
+        dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
 

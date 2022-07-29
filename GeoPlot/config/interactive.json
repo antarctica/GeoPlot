@@ -71,14 +71,16 @@
     },
     "Points":{
         "color":"black",
-        "marker_size":50.0,
+        "marker_size":1.0,
         "line_width":0.1,
-        "names": null,        
+        "names": null,      
+        "icon":"circle",  
 
         "Waypoints & Names":{
             "names":{
                 "font_size":10.0
-            }
+            },
+            "icon":"circle"
         }
     },
     "TimeData":{
