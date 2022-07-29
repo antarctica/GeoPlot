@@ -1,0 +1,35 @@
+{
+    "Basemap":{
+        "map_centre":[-62.75,-62.75],
+        "zoom_start":2.6,
+        "plot_title":true
+    },
+    "Paths":{
+        "Default":{
+
+        },
+        "Route Fuel Paths":{
+
+        },
+        "Route Traveltime Paths":{
+
+        }
+    },
+    "Maps":{
+        "Default":{
+
+        },
+        "Fuel Usage Rate":{
+
+        },
+        "Vehicle Max Speed":{
+
+        },
+        "Sea Ice Concentration":{
+
+        }
+    },
+    "Points":{
+
+    }
+}

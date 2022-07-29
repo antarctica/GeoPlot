@@ -1,0 +1,98 @@
+{   "Basemap":{
+        "map_centre":[-62.75,-62.75],
+        "zoom_start":2.6,
+        "plot_title":true
+    },
+    "Paths":{
+        "line_width":4.0,
+        "line_color":"black",
+        "line_opacity":1.0,
+        "path_points":false,
+        "data_name":null,
+        "unit":"",
+        
+        "RoutePath Fuel Paths":{
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"Fuel",
+            "unit":"Tonnes MGO"
+        },
+        "Route Traveltime Paths":{
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"traveltime",
+            "unit":"Days"
+        }
+    },
+    "Maps":{
+        "line_width":0.6,
+        "line_color":"black",
+        "fill_color":"black",
+        "fill_opacity":0.0,
+        "data_name": null,
+        "units":"",
+        "trim_min": null,
+        "trim_max": null,
+
+        "Fuel Usage Rate":{
+        },
+        "SIC":{
+            "line_color":"gray",
+            "fill_color":{
+                "colormap":"BuPu_09",
+                "cmin":1e-4,
+                "cmax":100
+            },
+            "fill_opacity":0.6,
+            "data_name":"SIC",
+            "units":"%"
+
+        },
+
+        "Extreme Sea Ice Conc":{
+            "line_width":0.01,
+            "line_color":"red",
+            "fill_color":"red",
+            "data_name": "ext_ice",
+            "fill_opacity":0.6
+        },
+
+
+        "Land Mask":{
+            "fill_opacity":0.6,
+            "data_name":"land"
+        },
+        "Mesh Grid Outline":
+        {
+            "fill_color":"white"
+        }
+    },
+    "Points":{
+        "color":"black",
+        "marker_size":50.0,
+        "line_width":0.1,
+        "names": null,        
+
+        "Waypoints & Names":{
+            "names":{
+                "font_size":10.0
+            }
+        }
+    },
+    "TimeData":{
+        "period":"P1D",
+        "duration":"P1M",
+        "point":true,
+        "loop":false,
+        "color":"orange",
+        "weight":3.0,
+        "icon":"circle",
+        "opacity": 0.8,
+        "SDA":{
+            "color":"orange",
+            "icon":"ship"
+        }
+    }
+}
