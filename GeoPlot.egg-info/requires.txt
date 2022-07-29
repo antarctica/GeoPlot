@@ -1,7 +1,0 @@
-pandas
-shapely
-geopandas
-xarray
-netCDF4
-matplotlib
-folium

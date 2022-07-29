@@ -1,8 +1,0 @@
-README.md
-setup.py
-GeoPlot.egg-info/PKG-INFO
-GeoPlot.egg-info/SOURCES.txt
-GeoPlot.egg-info/dependency_links.txt
-GeoPlot.egg-info/not-zip-safe
-GeoPlot.egg-info/requires.txt
-GeoPlot.egg-info/top_level.txt
