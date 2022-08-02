@@ -64,12 +64,16 @@ class BindColormap(MacroElement):
 
 
 class Map:
-    def __init__(self,Title,predefined=None,**kwargs):
+    def __init__(self,config,predefined=None,**kwargs):
 
 
         '''
             Initialising a map instance
         '''
+
+        # === Initialising layer info
+        self._layer_info = {}
+
 
         # ==== Loading standard configs
         p = paramsObject('Basemap',predefined=predefined,**kwargs)
@@ -78,10 +82,10 @@ class Map:
             <h1 style="color:#003b5c;font-size:16px">
             &ensp;<img src='https://i.ibb.co/JH2zknX/Small-Logo.png' alt="BAS-colour-eps" border="0" style="width:40px;height:40px;"> 
             <img src="https://i.ibb.co/XtZdzDt/BAS-colour-eps.png" alt="BAS-colour-eps" border="0" style="width:179px;height:40px;"> 
-            &ensp;|&ensp; RoutePlanner &ensp;|&ensp; {}
+            &ensp;|&ensp; {} to {}
             </h1>
             </body>
-            '''.format(Title)   
+            '''.format(config['Region']['startTime'],config['Region']['endTime'])   
         self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
         
         bsmap = folium.FeatureGroup(name='BaseMap')
@@ -94,16 +98,30 @@ class Map:
         if p['plot_title']:
             self.map.get_root().html.add_child(folium.Element(title_html))
 
+
+    def _layer(self,name,show=False):
+        if name not in self._layer_info:
+            lyr = folium.FeatureGroup(name='{}'.format(name),show=show)
+            self._layer_info[name] = lyr
+        return self._layer_info[name]
+
+    def _add_plots_map(self):
+        for key in self._layer_info.keys():
+            self._layer_info[key].add_to(self.map)
+
+    def Show(self):
+        self._add_plots_map()
+        folium.LayerControl(collapsed=True).add_to(self.map)
+        return self.map
+
+
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
         
 
         p = paramsObject('Paths',predefined=predefined,**kwargs)
 
         # Defining the feature groups to add
-        pths        = folium.FeatureGroup(name='{}'.format(name),show=show)
-        if p['path_points']:
-            pths_points = folium.FeatureGroup(name='{} - Path Points'.format(name),show=show)
-            
+        pths = self._layer(name,show=show)
         paths = geojson['features']
 
         # Determining min-max values of all paths if colormap being used
@@ -120,6 +138,10 @@ class Map:
         # Determining max travel-times of all paths
         for path in paths:
             points   = np.array(path['geometry']['coordinates'])
+
+            start_wpt = path['properties']['from']
+            end_wpt   = path['properties']['to']
+
             if p['data_name']:
                 data_val = np.array(path['properties'][p['data_name']])
             else:
@@ -138,8 +160,10 @@ class Map:
                 colormap.caption = '{} ({},Max Value={:.3f})'.format(name,p['unit'],max_val)
                 folium.ColorLine(points,data_val,colormap=colormap,nb_steps=50, weight=p['line_width'], opacity=p['line_opacity']).add_to(pths)
 
+                folium.PolyLine(points,color='black', weight=p['line_width'],opacity=0.0,popup = "Path - {} to {}\n{} = {} {}".format(start_wpt,end_wpt,p['data_name'],max_val,p['unit'])).add_to(pths)
+
             else:
-                folium.PolyLine(points,color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity']).add_to(pths)
+                folium.PolyLine(points,color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
 
 
             if p['path_points']:
@@ -153,28 +177,19 @@ class Map:
                                                     border_width=1,
                                                     text_color='black',
                                                     inner_icon_style='margin:0px;font-size:0.8em')
-                    ).add_to(pths_points)
+                    ).add_to(pths)
         
-        if p['path_points']:
-            pths_points.add_to(self.map)
         if type(p['line_color']) is dict:
-            self.map.add_child(pths)
             self.map.add_child(colormap)
             self.map.add_child(BindColormap(pths,colormap))
-        else:
-            pths.add_to(self.map)
 
 
     def Points(self,dataframe_points,name,show=True,predefined=None,**kwargs):
 
         p = paramsObject('Points',predefined=predefined,**kwargs)
 
-        wpts      = folium.FeatureGroup(name='{}'.format(name),show=show)
-
-        if p['names']:
-            wpts_name = folium.FeatureGroup(name='{} - Names'.format(name),show=show)
-
-
+        wpts      = self._layer(name,show=show)
+ 
         for id,wpt in dataframe_points.iterrows():
             loc = [wpt['Lat'], wpt['Long']]
             folium.Marker(
@@ -185,11 +200,10 @@ class Map:
                                                 border_width=p['line_width'],
                                                 text_color=p['color'],
                                                 inner_icon_style='margin:0px;font-size:{}em'.format(p["marker_size"])),
-                popup="<b>{} [{:4f},{:4f}]</b>".format(wpt['Name'],loc[0],loc[1]),
+                popup="Name = {}\n Long = {:4f}\n Lat = {:4f}\n".format(wpt['Name'],loc[0],loc[1]),
             ).add_to(wpts)    
 
             if p['names']:
-
                 folium.Marker(
                             location=loc,
                                 icon=folium.features.DivIcon(
@@ -197,12 +211,10 @@ class Map:
                                     icon_anchor=(0,0),
                                     html='<div style="font-size: {}pt">{}</div>'.format(p['names']['font_size'],wpt['Name']),
                                     ),
-                ).add_to(wpts_name)
+                ).add_to(wpts)
 
 
         wpts.add_to(self.map)
-        if p['names']:
-            wpts_name.add_to(self.map)
 
 
     def Maps(self,dataframe_pandas,name,show=True,predefined=None,**kwargs):
@@ -217,7 +229,7 @@ class Map:
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
 
-        feature_info = folium.FeatureGroup(name='{}'.format(name),show=show)
+        feature_info = self._layer(name,show=show)
 
 
         if p['data_name']:
@@ -237,9 +249,7 @@ class Map:
 
         if (type(p['fill_color']) is dict) and (p['data_name']):
             dataframe_geo
-            dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']].notna()]
-
-
+            dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']].notna() & ~np.isinf(abs(dataframe_geo[p['data_name']]))]
             cmin = dataframe_geo[p['data_name']].min()
             cmax = dataframe_geo[p['data_name']].max()
 
@@ -254,7 +264,6 @@ class Map:
                         'fillOpacity': p["fill_opacity"]
                     }
             ).add_to(feature_info)
-            self.map.add_child(feature_info)
             self.map.add_child(colormap)
             self.map.add_child(BindColormap(feature_info,colormap))
         else:
@@ -270,15 +279,11 @@ class Map:
                     'fillOpacity': p['fill_opacity']
                     }
             ).add_to(feature_info)
-            self.map.add_child(feature_info)
 
 
 
     def Vectors(self,Currents,name,show=True,predefined=None,**kwargs):
-
-
-
-        vcts = folium.FeatureGroup(name='Currents',show=show)
+        vcts = self._layer(name,show=show)
         for idx,vec in Currents.iterrows():
             loc =[[vec['Y'],vec['X']],[vec['Y']+vec['V']*scale,vec['X']+vec['U']*scale]]
             folium.PolyLine(loc, color="gray",weight=1.4).add_to(vcts)
@@ -290,9 +295,7 @@ class Map:
             # create your arrow
             for pair, rot in zip(pairs, rotations):
                 folium.RegularPolygonMarker(location=pair[0], color='gray', fill=True, fill_color='gray', fill_opacity=1,
-                                            number_of_sides=3, rotation=rot,radius=2,weight=0.8).add_to(vectors)
-
-        vcts.add_to(self.map)
+                                            number_of_sides=3, rotation=rot,radius=2,weight=0.8).add_to(vcts)
 
 
 
@@ -301,8 +304,7 @@ class Map:
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
 
-
-        feature_info = folium.FeatureGroup(name='{}'.format(name),show=show)
+        feature_info = self._layer(name,show=show)
         folium.GeoJson(dataframe_geo,
             style_function= lambda x: {
                     'fillColor': 'black',
@@ -316,7 +318,67 @@ class Map:
                 localize=True
             )
         ).add_to(feature_info) 
-        feature_info.add_to(self.map)
+
+    def MapArray(self,array,bounds,name,show=True):
+        feature_info = self._layer('{}'.format(name),show=show)
+        colormap = linear._colormaps['BuPu_09'].scale(0,100)
+        Zc = np.zeros((array.shape[0],array.shape[1],4))
+        for ii in range(Zc.shape[0]):
+            for jj in range(Zc.shape[1]):
+                z = array[ii,jj]
+                if np.isnan(z):
+                    Zc[ii,jj,:] = 0.0
+                else:
+                    Zc[ii,jj,:] = list(colormap.rgba_floats_tuple(z))
+
+        m = folium.Map([37, 0], zoom_start=1, tiles="stamentoner")
+
+        folium.raster_layers.ImageOverlay(
+            image=Zc[::-1],
+            bounds=bounds,
+            mercator_project=True,
+            opacity=0.6
+        ).add_to(feature_info)
+
+
+
+
+    def Geotiff(self,path,name,show=True):
+        import rasterio
+        src = rasterio.open(path)
+        indx=1
+        trying=True
+        while trying:
+            try:
+                feature_info = self._layer('{} - Band {}'.format(name,indx),show=show)
+                opc = 0.8
+                Z = src.read(indx)[::10,::10]
+                colormap = linear._colormaps['viridis'].scale(Z.min(),Z.max())
+                Zc = np.zeros((Z.shape[0],Z.shape[1],4))
+                for ii in range(Z.shape[0]):
+                    for jj in range(Z.shape[1]):
+                        z = Z[ii,jj]
+                        if np.isnan(z):
+                            Zc[ii,jj,:] = 0.0
+                        else:
+                            Zc[ii,jj,:] = list(colormap.rgba_floats_tuple(z))
+
+
+                img = folium.raster_layers.ImageOverlay(
+                    name="Band {}".format(indx),
+                    bounds = [[src.bounds[1], src.bounds[0]], [src.bounds[3], src.bounds[2]]],
+                    image=Zc,
+                    opacity=opc,
+                    mercator_project=True,
+                    pixelated=False,
+                    show = show
+                )
+                img.add_to(feature_info)
+            except:
+                trying=False
+            indx+=1
+
+
 
     def TimeData(self,geojson,predefined=None,**kwargs):
         p = paramsObject('TimeData',predefined=predefined,**kwargs)
@@ -343,9 +405,7 @@ class Map:
     
 
 
-    def Show(self):
-        folium.LayerControl(collapsed=True).add_to(self.map)
-        return self.map
+
 
 
 # def TimeMapSDA(PATH,map):

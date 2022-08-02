@@ -1,2 +1,4 @@
 *.egg-info
 *.ipynb_checkpoints
+*.tiff
+*.csv

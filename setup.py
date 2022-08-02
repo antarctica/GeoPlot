@@ -35,13 +35,9 @@ CLASSIFIERS = [
 ]
 
 INSTALL_REQUIRES = [
+    'folium',
     'pandas',
-    'shapely',
-    'geopandas',
-    'xarray',
-    'netCDF4',
-    'matplotlib',
-    'folium']
+    'geopandas']
 
 
 def read(*parts):

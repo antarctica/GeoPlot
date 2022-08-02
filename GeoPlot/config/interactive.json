@@ -11,11 +11,11 @@
         "data_name":null,
         "unit":"",
         
-        "RoutePath Fuel Paths":{
+        "Route Fuel Paths":{
             "line_color":{
-                "color":"viridis"
+                "color":"Dark2_03"
             },
-            "data_name":"Fuel",
+            "data_name":"fuel",
             "unit":"Tonnes MGO"
         },
         "Route Traveltime Paths":{
@@ -40,6 +40,7 @@
         },
         "SIC":{
             "line_color":"gray",
+            "line_width":0.05,
             "fill_color":{
                 "colormap":"BuPu_09",
                 "cmin":1e-4,
@@ -50,10 +51,33 @@
             "units":"%"
 
         },
+        "Elev":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuPu_09"
+            },
+            "fill_opacity":0.6,
+            "data_name":"elevation",
+            "units":"m"
+
+        },
+        "Fuel":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"YlOrRd_04"
+            },
+            "fill_opacity":0.6,
+            "data_name":"fuel",
+            "units":"tonnes"
+
+        },
+
+
 
         "Extreme Sea Ice Conc":{
-            "line_width":0.01,
-            "line_color":"red",
+            "line_width":0.05,
             "fill_color":"red",
             "data_name": "ext_ice",
             "fill_opacity":0.6
@@ -62,7 +86,8 @@
 
         "Land Mask":{
             "fill_opacity":0.6,
-            "data_name":"land"
+            "data_name":"land",
+            "line_width":0.05
         },
         "Mesh Grid Outline":
         {
@@ -76,12 +101,13 @@
         "names": null,      
         "icon":"circle",  
 
-        "Waypoints & Names":{
+        "Waypoints":{
             "names":{
                 "font_size":10.0
             },
             "icon":"circle"
         }
+        
     },
     "TimeData":{
         "period":"P1D",
