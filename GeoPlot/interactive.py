@@ -78,15 +78,21 @@ class Map:
         # ==== Loading standard configs
         p = paramsObject('Basemap',predefined=predefined,**kwargs)
 
+        if p['title']:
+            title='{} &ensp;|&ensp;'.format(p['title'])
+        else:
+            title=''
+
+
         title_html = '''
             <h1 style="color:#003b5c;font-size:16px">
             &ensp;<img src='https://i.ibb.co/JH2zknX/Small-Logo.png' alt="BAS-colour-eps" border="0" style="width:40px;height:40px;"> 
             <img src="https://i.ibb.co/XtZdzDt/BAS-colour-eps.png" alt="BAS-colour-eps" border="0" style="width:179px;height:40px;"> 
-            &ensp;|&ensp; {} to {}
+            &ensp; |&ensp; {} {} to {}
             </h1>
             </body>
-            '''.format(config['Region']['startTime'],config['Region']['endTime'])   
-        self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
+            '''.format(title,config['Region']['startTime'],config['Region']['endTime'])   
+        self.map = folium.Map(width=16*p['size'],height=9*p['size'],location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
         
         bsmap = folium.FeatureGroup(name='BaseMap')
         folium.TileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
@@ -109,10 +115,14 @@ class Map:
         for key in self._layer_info.keys():
             self._layer_info[key].add_to(self.map)
 
-    def Show(self):
+    def show(self):
         self._add_plots_map()
         folium.LayerControl(collapsed=True).add_to(self.map)
         return self.map
+
+    def save(self,file):
+        map = self.show()
+        map.save(file)
 
 
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
@@ -322,6 +332,7 @@ class Map:
     def MapArray(self,array,bounds,name,show=True):
         feature_info = self._layer('{}'.format(name),show=show)
         colormap = linear._colormaps['BuPu_09'].scale(0,100)
+        colormap.caption = '{} (%)'.format(name)
         Zc = np.zeros((array.shape[0],array.shape[1],4))
         for ii in range(Zc.shape[0]):
             for jj in range(Zc.shape[1]):
@@ -339,6 +350,8 @@ class Map:
             mercator_project=True,
             opacity=0.6
         ).add_to(feature_info)
+        self.map.add_child(colormap)
+        self.map.add_child(BindColormap(feature_info,colormap))
 
 
 
@@ -350,10 +363,11 @@ class Map:
         trying=True
         while trying:
             try:
+                Z = src.read(indx)[::10,::10]
                 feature_info = self._layer('{} - Band {}'.format(name,indx),show=show)
                 opc = 0.8
-                Z = src.read(indx)[::10,::10]
                 colormap = linear._colormaps['viridis'].scale(Z.min(),Z.max())
+                colormap.caption = '{} - Band {}'.format(name,indx)
                 Zc = np.zeros((Z.shape[0],Z.shape[1],4))
                 for ii in range(Z.shape[0]):
                     for jj in range(Z.shape[1]):
@@ -374,9 +388,13 @@ class Map:
                     show = show
                 )
                 img.add_to(feature_info)
+                
+                self.map.add_child(colormap)
+                self.map.add_child(BindColormap(feature_info,colormap))
             except:
                 trying=False
             indx+=1
+
 
 
 

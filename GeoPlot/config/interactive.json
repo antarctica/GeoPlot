@@ -1,7 +1,9 @@
 {   "Basemap":{
         "map_centre":[-62.75,-62.75],
         "zoom_start":2.6,
-        "plot_title":true
+        "plot_title":true,
+        "title":null,
+        "size":60
     },
     "Paths":{
         "line_width":4.0,
