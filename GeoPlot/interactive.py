@@ -86,13 +86,12 @@ class Map:
 
         title_html = '''
             <h1 style="color:#003b5c;font-size:16px">
-            &ensp;<img src='https://i.ibb.co/JH2zknX/Small-Logo.png' alt="BAS-colour-eps" border="0" style="width:40px;height:40px;"> 
-            <img src="https://i.ibb.co/XtZdzDt/BAS-colour-eps.png" alt="BAS-colour-eps" border="0" style="width:179px;height:40px;"> 
+            &ensp;<img src="https://i.ibb.co/XtZdzDt/BAS-colour-eps.png" alt="BAS-colour-eps" border="0" style="width:179px;height:40px;"> 
             &ensp; |&ensp; {} {} to {}
             </h1>
             </body>
             '''.format(title,config['Region']['startTime'],config['Region']['endTime'])   
-        self.map = folium.Map(width=16*p['size'],height=9*p['size'],location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
+        self.map = folium.Map(width=720,height=460,location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
         
         bsmap = folium.FeatureGroup(name='BaseMap')
         folium.TileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
