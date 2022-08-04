@@ -6,3 +6,7 @@
 *.DS_Store
 build
 dist
+*.pyc
+**/__pycache__
+*.ipynb_checkpoints
+/.vscode/
