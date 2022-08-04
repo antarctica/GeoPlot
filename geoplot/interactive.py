@@ -87,10 +87,10 @@ class Map:
         title_html = '''
             <h1 style="color:#003b5c;font-size:16px">
             &ensp;<img src="https://i.ibb.co/XtZdzDt/BAS-colour-eps.png" alt="BAS-colour-eps" border="0" style="width:179px;height:40px;"> 
-            &ensp; |&ensp; {} {} to {}
+            &ensp; |&ensp; {}
             </h1>
             </body>
-            '''.format(title,config['Region']['startTime'],config['Region']['endTime'])   
+            '''.format(title)   
         self.map = folium.Map(width=720,height=460,location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
         
         bsmap = folium.FeatureGroup(name='BaseMap')

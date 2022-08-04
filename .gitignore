@@ -3,3 +3,6 @@
 *.tiff
 *.csv
 *.html
+*.DS_Store
+build
+dist
