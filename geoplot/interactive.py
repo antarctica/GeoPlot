@@ -125,7 +125,19 @@ class Map:
 
 
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
-        
+        '''
+            Overlays paths on the interactive plot with layer defined by `name`
+
+            Attributes:
+                geojson (dict): A geojson file with several features representing all 
+                    the separate paths
+                name (string): Layer name to add to the interactive plot
+                show (opt=True, boolean) - Show the layer on loading of plot
+                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                    config/interactive.json of the package files
+        '''
+
+
 
         p = paramsObject('Paths',predefined=predefined,**kwargs)
 
