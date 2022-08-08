@@ -1,35 +1,114 @@
-{
-    "Basemap":{
-        "map_centre":[-62.75,-62.75],
-        "zoom_start":2.6,
-        "plot_title":true
+{   "Basemap":{
+        "CRS":"Orthographic",
+        "pole_centre":[-50.0,-90],
+        "bounds": [[-120.0,-80.0],[-10.0,-50.0]],
+        "title":null
     },
+    "Points":{
+        "color":"black",
+        "marker_size":75,
+        "line_width":0.1,
+        "names": null,      
+        "icon":"o",  
+
+        "Waypoints":{
+            "names":{
+                "font_size":10.0
+            },
+            "icon":"o"
+        }
+        
+    },
+
     "Paths":{
-        "Default":{
-
-        },
+        "line_width":4.0,
+        "line_color":"black",
+        "line_opacity":1.0,
+        "path_points":false,
+        "data_name":null,
+        "unit":"",
+        
         "Route Fuel Paths":{
-
+            "line_color":{
+                "color":"Dark2_03"
+            },
+            "data_name":"fuel",
+            "unit":"Tonnes MGO"
         },
         "Route Traveltime Paths":{
-
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"traveltime",
+            "unit":"Days"
         }
     },
     "Maps":{
-        "Default":{
+        "line_width":0.6,
+        "line_color":"black",
+        "fill_color":"black",
+        "fill_opacity":0.0,
+        "data_name": null,
+        "units":"",
+        "trim_min": null,
+        "trim_max": null,
 
-        },
         "Fuel Usage Rate":{
+        },
+        "SIC":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuPu_09",
+                "cmin":1e-4,
+                "cmax":100
+            },
+            "fill_opacity":0.6,
+            "data_name":"SIC",
+            "units":"%"
 
         },
-        "Vehicle Max Speed":{
+        "Elev":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuPu_09"
+            },
+            "fill_opacity":0.6,
+            "data_name":"elevation",
+            "units":"m"
 
         },
-        "Sea Ice Concentration":{
+        "Fuel":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"YlOrRd_04"
+            },
+            "fill_opacity":0.6,
+            "data_name":"fuel",
+            "units":"Tonnes/Day"
 
+        },
+
+
+
+        "Extreme Sea Ice Conc":{
+            "line_width":0.05,
+            "fill_color":"red",
+            "data_name": "ext_ice",
+            "fill_opacity":0.6
+        },
+
+
+        "Land Mask":{
+            "fill_opacity":0.6,
+            "data_name":"land",
+            "line_width":0.05
+        },
+        "Mesh Grid Outline":
+        {
+            "fill_color":"white"
         }
-    },
-    "Points":{
-
     }
 }
