@@ -64,7 +64,7 @@ class BindColormap(MacroElement):
 
 
 class Map:
-    def __init__(self,config,predefined=None,**kwargs):
+    def __init__(self,predefined=None,**kwargs):
 
 
         '''
@@ -244,7 +244,6 @@ class Map:
         '''
 
         p = paramsObject('Maps',predefined=predefined,**kwargs)
-        self.p = p
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
