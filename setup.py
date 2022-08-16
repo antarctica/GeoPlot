@@ -16,12 +16,12 @@ SETUP_DIRECTORY = os.path.dirname(os.path.abspath(inspect.getfile(
 
 LOCAL_PATH = os.path.join(SETUP_DIRECTORY, "setup.py")
 
-NAME    = "GeoPlot"
+NAME    = "geoplot"
 VERSION = '0.0.1'
 
 INCLUDE_DIRS = numpy.distutils.misc_util.get_numpy_include_dirs()
 
-META_PATH = os.path.join("GeoPlot", "__init__.py")
+META_PATH = os.path.join("geoplot", "__init__.py")
 KEYWORDS = ["BAS", "SDT", "DT"]
 
 CLASSIFIERS = [
