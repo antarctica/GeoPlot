@@ -16,12 +16,12 @@ SETUP_DIRECTORY = os.path.dirname(os.path.abspath(inspect.getfile(
 
 LOCAL_PATH = os.path.join(SETUP_DIRECTORY, "setup.py")
 
-NAME    = "geoplot"
+NAME    = "GeoPlot"
 VERSION = '0.0.1'
 
 INCLUDE_DIRS = numpy.distutils.misc_util.get_numpy_include_dirs()
 
-META_PATH = os.path.join("geoplot", "__init__.py")
+META_PATH = os.path.join("GeoPlot", "__init__.py")
 KEYWORDS = ["BAS", "SDT", "DT"]
 
 CLASSIFIERS = [
@@ -96,7 +96,7 @@ def setup_package():
         install_requires=INSTALL_REQUIRES,
         include_package_data=True,
         include_dirs=INCLUDE_DIRS,
-        package_data={"geoplot": ["lib/*.so"]})
+        package_data={"GeoPlot": ["lib/*.so"]})
 
 
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         except Exception:
             pass
         # delete all shared libs from lib directory
-        path = os.path.join(SETUP_DIRECTORY, 'geoplot', 'lib')
+        path = os.path.join(SETUP_DIRECTORY, 'GeoPlot', 'lib')
         for filename in glob.glob(path + os.sep + '*.pyd'):
             try:
                 os.remove(filename)
