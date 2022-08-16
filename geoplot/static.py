@@ -58,10 +58,12 @@ class Map:
         else:
            self.ccrs = ccrs.Mercator()
   
-        self.fig = plt.figure(figsize=(15,15))
+        self.fig = plt.figure(figsize=(p['figure_size'][0],p['figure_size'][1]))
         matplotlib.rcParams.update({'font.size': 16})
 
         self.ax = plt.axes(projection=self.ccrs)
+        self._bounds = p["bounds"]
+
         self.ax.set_extent([p["bounds"][0][0]+1e-6,p["bounds"][1][0]-1e-6,
                             p["bounds"][0][1]+1e-6,p["bounds"][1][1]-1e-6], crs=ccrs.PlateCarree())
         self.ax.add_image(cimgt.GoogleTiles(), 3)
@@ -80,10 +82,22 @@ class Map:
             self.ax.scatter(dataframe_points['Long'],dataframe_points['Lat'],p["marker_size"],marker=p['icon'],transform=ccrs.PlateCarree(),color=p['color'],zorder=self.zorder)
 
         if type(p['color']) is dict:
-            colormap = linear._colormaps[p['fill_color']['colormap']].scale(dataframe_points[p['color']['data_name']].min(), 
+            colormap = linear._colormaps[p['color']['colormap']].scale(dataframe_points[p['color']['data_name']].min(), 
                                                                             dataframe_points[p['color']['data_name']].max())
             colours = [colormap.rgba_floats_tuple(ii) for ii in np.array(dataframe_points[p['color']['data_name']])]
             self.ax.scatter(dataframe_points['Long'],dataframe_points['Lat'],p["marker_size"],marker=p['icon'],transform=ccrs.PlateCarree(),color=colours,zorder=self.zorder)
+
+        if type(p['names']) is dict:
+            transform = ccrs.PlateCarree()._as_mpl_transform(self.ax)
+
+
+            dataframe_points = dataframe_points[(dataframe_points['Long'] >= self._bounds[0][0]+1e-6) &\
+                                                (dataframe_points['Long'] <= self._bounds[1][0]+1e-6) &\
+                                                (dataframe_points['Lat'] >= self._bounds[0][1]+1e-6) &\
+                                                (dataframe_points['Lat'] <= self._bounds[1][1]+1e-6)]
+
+            for idx,row in dataframe_points.iterrows():
+                self.ax.annotate(row['Name'], xy=(row['Long']+p['names']['dX'], row['Lat']+p['names']['dY']),xycoords=transform,color=p['names']['color'], size=p['names']['Size'])
 
 
     def Paths(self,geojson,predefined=None,**kwargs):
@@ -175,6 +189,7 @@ class Map:
                 if not np.isnan(data):
                     colour = colormap.rgba_floats_tuple(data)
                     self.ax.add_geometries([poly['geometry']], crs=ccrs.PlateCarree(), edgecolor=p["line_color"], facecolor=colour,alpha=p["fill_opacity"],lw=p["line_width"],zorder=self.zorder)
+            
 
 
         else:
@@ -184,4 +199,21 @@ class Map:
                     self.ax.plot(np.array(x),np.array(y),color=p["line_color"],linewidth=p["line_width"],transform=ccrs.PlateCarree(),zorder=self.zorder)
             else:
                 for _,poly in dataframe_geo.iterrows():
-                    self.ax.add_geometries([poly['geometry']], crs=ccrs.PlateCarree(), edgecolor=p["line_color"], facecolor=p['fill_color'],alpha=p["fill_opacity"],lw=p["line_width"],zorder=self.zorder)            
+                    self.ax.add_geometries([poly['geometry']], crs=ccrs.PlateCarree(), edgecolor=p["line_color"], facecolor=p['fill_color'],alpha=p["fill_opacity"],lw=p["line_width"],zorder=self.zorder)   
+
+    def Vectors(self,dataframe_pandas,predefined=None,**kwargs):
+        '''
+        
+        '''
+        p = paramsObject('Vectors',predefined=predefined,**kwargs)
+        self.zorder+=1
+
+        dataframe_pandas = copy.copy(dataframe_pandas)
+
+        self.ax.quiver(dataframe_pandas[p['Long']].to_numpy(),dataframe_pandas[p['Lat']].to_numpy(),dataframe_pandas[p['U']].to_numpy(),dataframe_pandas[p['V']].to_numpy(),zorder=self.zorder,transform=ccrs.PlateCarree(),width=p['line_width'],scale=p['scale'])
+
+    def savefig(self,filename,**kwargs):
+        plt.savefig(filename,**kwargs)
+    
+    def show(self):
+        plt.show()

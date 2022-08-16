@@ -352,7 +352,6 @@ class Map:
                 else:
                     Zc[ii,jj,:] = list(colormap.rgba_floats_tuple(z))
 
-        m = folium.Map([37, 0], zoom_start=1, tiles="stamentoner")
 
         folium.raster_layers.ImageOverlay(
             image=Zc[::-1],

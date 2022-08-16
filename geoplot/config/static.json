@@ -2,7 +2,8 @@
         "CRS":"Orthographic",
         "pole_centre":[-50.0,-90],
         "bounds": [[-120.0,-80.0],[-10.0,-50.0]],
-        "title":null
+        "title":null,
+        "figure_size":[15,15]
     },
     "Points":{
         "color":"black",
@@ -16,6 +17,20 @@
                 "font_size":10.0
             },
             "icon":"o"
+        },
+
+        "Raw SIC":{
+            "icon":"o",
+            "marker_size":0.1,
+            "color":{
+                "colormap":"BuPu_09",
+                "data_name":"Mean"
+            }
+        },
+        "Raw Extreme SIC":{
+            "icon":"o",
+            "marker_size":0.1,
+            "color":"Red"
         }
         
     },
@@ -44,7 +59,7 @@
         }
     },
     "Maps":{
-        "line_width":0.6,
+        "line_width":0.1,
         "line_color":"black",
         "fill_color":"black",
         "fill_opacity":0.0,
@@ -57,7 +72,7 @@
         },
         "SIC":{
             "line_color":"gray",
-            "line_width":0.05,
+            "line_width":0.0,
             "fill_color":{
                 "colormap":"BuPu_09",
                 "cmin":1e-4,
@@ -70,7 +85,7 @@
         },
         "Elev":{
             "line_color":"gray",
-            "line_width":0.05,
+            "line_width":0.0,
             "fill_color":{
                 "colormap":"BuPu_09"
             },
@@ -81,7 +96,7 @@
         },
         "Fuel":{
             "line_color":"gray",
-            "line_width":0.05,
+            "line_width":0.0,
             "fill_color":{
                 "colormap":"YlOrRd_04"
             },
@@ -90,11 +105,20 @@
             "units":"Tonnes/Day"
 
         },
+        "Speed":{
+            "line_color":"gray",
+            "line_width":0.0,
+            "fill_color":{
+                "colormap":"viridis"
+            },
+            "fill_opacity":0.6,
+            "data_name":"speed",
+            "units":"km/hr"
 
-
+        },
 
         "Extreme Sea Ice Conc":{
-            "line_width":0.05,
+            "line_width":0.0,
             "fill_color":"red",
             "data_name": "ext_ice",
             "fill_opacity":0.6
@@ -102,13 +126,55 @@
 
 
         "Land Mask":{
-            "fill_opacity":0.6,
+            "line_width":0.0,
+            "fill_opacity":1.0,
             "data_name":"land",
-            "line_width":0.05
+            "fill_color":"gray"
         },
         "Mesh Grid Outline":
         {
-            "fill_color":"white"
+            "fill_color":"white",
+            "fill_opacity":0.0,
+            "line_width":0.1,
+            "line_color":"black"
+        }
+    },
+    "Vectors":{
+        "color": "blue",
+        "scale":25,
+        "line_width":0.001,
+        "Long":"Long",
+        "Lat":"Lat",
+        "U":"U",
+        "V":"V",
+        "Currents":{
+            "Long":"cx",
+            "Lat":"cy",
+            "U":"uC",
+            "V":"vC",
+            "color":"blue",
+            "line_width":0.001,
+            "scale":15
+        }
+    },
+    "Route_Info": {
+        "objective_function": "traveltime",
+        "path_variables": [
+          "fuel",
+          "traveltime"
+        ],
+        "waypoints_path": "./waypoints.csv",
+        "source_waypoints": ["Halley"],
+        "end_waypoints": ["Rothera"],
+        "vector_names": ["uC","vC"],
+        "zero_currents": false,
+        "variable_speed": true,
+        "time_unit": "days",
+        "early_stopping_criterion": true,
+        "save_dijkstra_graphs": false,
+        "smooth_path":{
+          "max_iteration_number":1000,
+          "minimum_difference": 1e-3
         }
     }
 }
