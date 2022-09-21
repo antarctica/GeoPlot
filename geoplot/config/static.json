@@ -14,7 +14,11 @@
 
         "Waypoints":{
             "names":{
-                "font_size":10.0
+                "font_size":10.0,
+                "dX":0.1,
+                "dY":0.1,
+                "color":"k",
+                "Size":15
             },
             "icon":"o"
         },

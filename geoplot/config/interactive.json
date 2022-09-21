@@ -75,6 +75,17 @@
             "units":"Tonnes/Day"
 
         },
+        "Speed":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"YlOrRd_04"
+            },
+            "fill_opacity":0.6,
+            "data_name":"speed",
+            "units":"km/hr"
+
+        },
 
 
 

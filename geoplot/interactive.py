@@ -91,10 +91,10 @@ class Map:
             </h1>
             </body>
             '''.format(title)   
-        self.map = folium.Map(width=720,height=460,location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
+        self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)#,width=720,height=460)
         
         bsmap = folium.FeatureGroup(name='BaseMap')
-        folium.TileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
+        folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
         bsmap.add_to(self.map)
         bsmap = folium.FeatureGroup(name='Dark BaseMap',show=False)
         folium.TileLayer(tiles="https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png",attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',name='darkmatter').add_to(bsmap)
@@ -181,7 +181,7 @@ class Map:
                 colormap.caption = '{} ({},Max Value={:.3f})'.format(name,p['unit'],max_val)
                 folium.ColorLine(points,data_val,colormap=colormap,nb_steps=50, weight=p['line_width'], opacity=p['line_opacity']).add_to(pths)
 
-                folium.PolyLine(points,color='black', weight=p['line_width'],opacity=0.0,popup = "Path - {} to {}\n{} = {} {}".format(start_wpt,end_wpt,p['data_name'],max_val,p['unit'])).add_to(pths)
+                folium.PolyLine(points,color='black', weight=p['line_width'],opacity=0.0,popup = "Path - {} to {}\n{} = {:.3f} {}".format(start_wpt,end_wpt,p['data_name'],np.array(path['properties'][p['data_name']]).max(),p['unit'])).add_to(pths)
 
             else:
                 folium.PolyLine(points,color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
