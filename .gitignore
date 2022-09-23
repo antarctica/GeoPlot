@@ -3,3 +3,6 @@
 *.tiff
 *.csv
 *.html
+*.pyc
+__pycache__/
+/.idea/
