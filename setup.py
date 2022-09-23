@@ -20,6 +20,7 @@ setup(
     author_email=geoplot.__email__,
     maintainer=geoplot.__author__,
     maintainer_email=geoplot.__email__,
+    url="https://github.com/antarctica/GeoPlot",
     classifiers=[el.lstrip() for el in """
         Development Status :: 3 - Alpha
         Intended Audience :: Science/Research
@@ -33,7 +34,7 @@ setup(
         Programming Language :: Python :: 3.9
         Topic :: Scientific/Engineering
     """.split('\n')],
-    packages=find_packages(),
+    packages=find_packages() + ["geoplot.config"],
     zip_safe=False,
     install_requires=get_content("requirements.txt"),
     include_package_data=True)
