@@ -1,5 +1,12 @@
+.DS_Store
 *.egg-info
 *.ipynb_checkpoints
 *.tiff
 *.csv
 *.html
+*.pyc
+__pycache__/
+/.idea/
+/venv/
+/build/
+/dist/
