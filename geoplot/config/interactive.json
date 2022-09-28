@@ -3,7 +3,8 @@
         "zoom_start":2.6,
         "plot_title":true,
         "title":null,
-        "size":60
+        "size":60,
+        "offline_coastlines":null
     },
     "Paths":{
         "line_width":4.0,

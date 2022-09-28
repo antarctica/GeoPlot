@@ -96,9 +96,16 @@ class Map:
         bsmap = folium.FeatureGroup(name='BaseMap')
         folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
         bsmap.add_to(self.map)
-        bsmap = folium.FeatureGroup(name='Dark BaseMap',show=False)
-        folium.TileLayer(tiles="https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png",attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',name='darkmatter').add_to(bsmap)
-        bsmap.add_to(self.map)
+
+        if p['offline_coastlines']:
+            bsmap = folium.FeatureGroup(name='Coastlines',show=False)
+            antarica = gpd.read_file(p['offline_coastlines'])
+            folium.GeoJson(antarica,
+                    style_function=lambda feature: {
+                        'color': 'black',
+                        'weight': 0.5,
+                    }, name="geojson").add_to(bsmap)
+            bsmap.add_to(self.map)
 
         if p['plot_title']:
             self.map.get_root().html.add_child(folium.Element(title_html))
