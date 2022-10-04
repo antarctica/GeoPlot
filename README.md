@@ -12,7 +12,7 @@ or equally installed directly using
 ```
 pip install geoplot
 ```
----
+
 ## Examples
 There are two types of plotting functions included in the software package: `Static` and `Interactive`. Outlined below are examples how each of these sections of this software package can be used, with further documentation given in the doc strings of the classes. For both classes the plotting is run by applying consecutive layers to plot by consecutive function calls. For each of the software packages being generated within the BAS AI Lab many of the datasets have a list of plotting standard, be it colour for a plotted mesh or size of a marker, so we leverage a set of standard as defined within the configuration files for each plotting type, given in the `./geoplot/config` folder.
 ### *Interactive*
@@ -37,8 +37,6 @@ mp.Points(itinary)
 mp.savefig('Figure.pdf')
 ```
 
-
----
 ## Development & Contributions
 Development of software package is conducted by the [BAS AI Lab](https://www.bas.ac.uk/team/science-teams/ai-lab/).
 
