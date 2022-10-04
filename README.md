@@ -1,5 +1,5 @@
 ![](logo.jpg)
-![Version][version] ![Downloads][downloads]
+<!-- ![Version][version] ![Downloads][downloads] -->
 
 >GeoPlot is an interactive and static plotting toolkit that is leveraged by several projects across the British Antarctic Survey Artificial Intelligence Lab (BAS AI) used in combinations with additional software packages being developed. 
 ---
