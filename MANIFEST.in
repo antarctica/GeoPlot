@@ -1,4 +1,4 @@
 include pyproject.toml
 include *.md
 include LICENSE
-recursive-include geoplot/config *.json
+recursive-include geo_plot/config *.json

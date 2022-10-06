@@ -66,10 +66,27 @@ class BindColormap(MacroElement):
 class Map:
     def __init__(self,predefined=None,**kwargs):
 
+        """
+            ---
 
-        '''
-            Initialising a map instance
-        '''
+            Interactive Plotting Toolkit leveraging Folium software package. During the class call a basemap is generated and subsequent function calls from the class functions as separate layers. Once all layers are completed the plot can either be shown in an interactive notebook or saved for viewing later
+
+            This plotting class includes:
+                Maps: Plotting Geopandas dataframes of polygon datatypes e.g. Environmental Mesh
+                Paths: Plotting GeoJSONs of line information e.g. Route Paths
+                Points: Plotting padnas dataframe of small point information e.g. waypoints
+                Vectors: Plotting pandas dataframe of small vector information e.g. Currents
+                MeshInfo: Plotting Geopandas dataframe labelling the data with all its attributes.
+
+            ---
+
+            Attributes:
+                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                    config/interactive.json of the package files
+                **kwargs - Can be used to change information within the configuration files. See manual for more information.
+            ---
+
+        """
 
         # === Initialising layer info
         self._layer_info = {}
@@ -122,11 +139,23 @@ class Map:
             self._layer_info[key].add_to(self.map)
 
     def show(self):
+        '''
+            For usecase in interactive notebooks, showing the plot.
+        '''
+
         self._add_plots_map()
         folium.LayerControl(collapsed=True).add_to(self.map)
         return self.map
 
     def save(self,file):
+        '''
+            Saving the interactive plot to file
+
+            Attributes:
+                file (str): File path for output 
+        '''
+
+
         map = self.show()
         map.save(file)
 
@@ -143,9 +172,6 @@ class Map:
                 predefined (opt=None, srtring) - Predefiend plotting formats given in 
                     config/interactive.json of the package files
         '''
-
-
-
         p = paramsObject('Paths',predefined=predefined,**kwargs)
 
         # Defining the feature groups to add
@@ -213,6 +239,16 @@ class Map:
 
 
     def Points(self,dataframe_points,name,show=True,predefined=None,**kwargs):
+        '''
+            Overlays small collection of Points, such as waypoints and sites of interest.
+
+            Attributes:
+                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Latitude ('Lat') Longitude ('Long'), Name ('Name').  
+                name (string): Layer name to add to the interactive plot
+                show (opt=True, boolean) - Show the layer on loading of plot
+                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                    config/interactive.json of the package files
+        '''
 
         p = paramsObject('Points',predefined=predefined,**kwargs)
 
@@ -247,9 +283,15 @@ class Map:
 
     def Maps(self,dataframe_pandas,name,show=True,predefined=None,**kwargs):
         '''
-            Plotting a map type object
+            Overlays a layer of vectors such as currents. 
+            
+            Attributes:
+                dataframe_pandas (GeoPandas DataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'. Additional plotting of specfic columns is done in the configuration files.  
+                name (string): Layer name to add to the interactive plot
+                show (opt=True, boolean) - Show the layer on loading of plot
+                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                    config/interactive.json of the package files
         '''
-
         p = paramsObject('Maps',predefined=predefined,**kwargs)
 
         dataframe_pandas = copy.copy(dataframe_pandas)
@@ -309,7 +351,19 @@ class Map:
 
 
 
-    def Vectors(self,Currents,name,show=True,predefined=None,**kwargs):
+    def Vectors(self,Currents,name,scale,show=True,predefined=None,**kwargs):
+        '''
+            Overlays a layer of vectors such as currents. 
+            
+            Attributes:
+                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Longitude ('X') Latitude ('Y'), Displacement in X ('U') and Displacement in Y ('Y').  
+                name (string): Layer name to add to the interactive plot
+                show (opt=True, boolean) - Show the layer on loading of plot
+                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                    config/interactive.json of the package files
+        '''
+
+
         vcts = self._layer(name,show=show)
         for idx,vec in Currents.iterrows():
             loc =[[vec['Y'],vec['X']],[vec['Y']+vec['V']*scale,vec['X']+vec['U']*scale]]
@@ -327,6 +381,19 @@ class Map:
 
 
     def MeshInfo(self,cellboxes,name,show=True):
+        '''
+            Overlays a layer that gives information on all polygon boxes. 
+            
+            Attributes:
+                cellboxes (GeodataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'.  
+                name (string): Layer name to add to the interactive plot
+                show (opt=True, boolean) - Show the layer on loading of plot
+                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                    config/interactive.json of the package files
+        '''
+
+
+
         dataframe_pandas = pd.DataFrame(cellboxes)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
@@ -346,7 +413,7 @@ class Map:
             )
         ).add_to(feature_info) 
 
-    def MapArray(self,array,bounds,name,show=True):
+    def _MapArray(self,array,bounds,name,show=True):
         feature_info = self._layer('{}'.format(name),show=show)
         colormap = linear._colormaps['BuPu_09'].scale(0,100)
         colormap.caption = '{} (%)'.format(name)
@@ -372,7 +439,7 @@ class Map:
 
 
 
-    def Geotiff(self,path,name,show=True):
+    def _Geotiff(self,path,name,show=True):
         import rasterio
         src = rasterio.open(path)
         indx=1
@@ -414,7 +481,7 @@ class Map:
 
 
 
-    def TimeData(self,geojson,predefined=None,**kwargs):
+    def _TimeData(self,geojson,predefined=None,**kwargs):
         p = paramsObject('TimeData',predefined=predefined,**kwargs)
 
         for ii in range(len(geojson['features'])):
