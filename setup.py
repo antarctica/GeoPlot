@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-import geo_plot
+import bas_geoplot
 
 
 def get_content(filename):
@@ -11,15 +11,15 @@ def get_content(filename):
 requirements = get_content("requirements.txt")
 
 setup(
-    name=geo_plot.__name__,
-    version=geo_plot.__version__,
-    description=geo_plot.__description__,
+    name=bas_geoplot.__name__,
+    version=bas_geoplot.__version__,
+    description=bas_geoplot.__description__,
     long_description=get_content("README.md"),
     long_description_content_type="text/markdown",
-    author=geo_plot.__author__,
-    author_email=geo_plot.__email__,
-    maintainer=geo_plot.__author__,
-    maintainer_email=geo_plot.__email__,
+    author=bas_geoplot.__author__,
+    author_email=bas_geoplot.__email__,
+    maintainer=bas_geoplot.__author__,
+    maintainer_email=bas_geoplot.__email__,
     url="https://github.com/antarctica/GeoPlot",
     classifiers=[el.lstrip() for el in """
         Development Status :: 3 - Alpha
@@ -34,7 +34,7 @@ setup(
         Programming Language :: Python :: 3.9
         Topic :: Scientific/Engineering
     """.split('\n')],
-    packages=find_packages() + ["geo_plot.config"],
+    packages=find_packages() + ["bas_geoplot.config"],
     zip_safe=False,
     install_requires=get_content("requirements.txt"),
     include_package_data=True)

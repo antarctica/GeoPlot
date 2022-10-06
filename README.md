@@ -10,7 +10,7 @@ python setup.py install
 ```
 or equally installed directly using
 ```
-pip install geoplot
+pip install bas-geoplot
 ```
 
 ## Examples
@@ -18,7 +18,7 @@ There are two types of plotting functions included in the software package: `Sta
 ### *Interactive*
 The interactive plotting functions leverage the python `folium` package to generate interactive `html` files that can be generated locally and run using a web browser. 
 ``` python
-from geoplot.interactive import iMap
+from bas_geoplot.interactive import iMap
 mp = iMap(title='Example Plot')
 mp.Maps(mesh,'SIC',predefined='SIC')
 mp.Points(itinary,'Waypoints')
@@ -30,7 +30,7 @@ In this example the `mp = iMap(title='Example Plot')` generates the initial base
 ### *Static*
 The static plotting functions leverage the python `cartopy` package to generate static files. For simplicity we follow simialar structure to the interactive plots, with an example coding section given by
 ``` python
-from geoplot.static import sMap
+from bas_geoplot.static import sMap
 mp = sMap(title='Example Plot')
 mp.Maps(mesh,predefined='SIC')
 mp.Points(itinary)
