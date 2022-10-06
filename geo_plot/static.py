@@ -205,16 +205,16 @@ class Map:
     #     if type(p['line_color']) is dict:
 
  
-    # def Vectors(self,dataframe_pandas,predefined=None,**kwargs):
-    #     '''
+    def Vectors(self,dataframe_pandas,predefined=None,**kwargs):
+        '''
         
-    #     '''
-    #     p = paramsObject('Vectors',predefined=predefined,**kwargs)
-    #     self.zorder+=1
+        '''
+        p = paramsObject('Vectors',predefined=predefined,**kwargs)
+        self.zorder+=1
 
-    #     dataframe_pandas = copy.copy(dataframe_pandas)
+        dataframe_pandas = copy.copy(dataframe_pandas)
 
-    #     self.ax.quiver(dataframe_pandas[p['Long']].to_numpy(),dataframe_pandas[p['Lat']].to_numpy(),dataframe_pandas[p['U']].to_numpy(),dataframe_pandas[p['V']].to_numpy(),zorder=self.zorder,transform=ccrs.PlateCarree(),width=p['line_width'],scale=p['scale'])
+        self.ax.quiver(dataframe_pandas[p['Long']].to_numpy(),dataframe_pandas[p['Lat']].to_numpy(),dataframe_pandas[p['U']].to_numpy(),dataframe_pandas[p['V']].to_numpy(),zorder=self.zorder,transform=ccrs.PlateCarree(),width=p['line_width'],scale=p['scale'])
 
     def savefig(self,filename,**kwargs):
         plt.savefig(filename,**kwargs)

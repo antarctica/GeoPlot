@@ -309,7 +309,7 @@ class Map:
 
 
 
-    def Vectors(self,Currents,name,show=True,predefined=None,**kwargs):
+    def Vectors(self,Currents,name,scale,show=True,predefined=None,**kwargs):
         vcts = self._layer(name,show=show)
         for idx,vec in Currents.iterrows():
             loc =[[vec['Y'],vec['X']],[vec['Y']+vec['V']*scale,vec['X']+vec['U']*scale]]
