@@ -1,3 +1,4 @@
+from importlib.metadata import entry_points
 from setuptools import setup, find_packages
 
 import bas_geoplot
@@ -34,7 +35,12 @@ setup(
         Programming Language :: Python :: 3.9
         Topic :: Scientific/Engineering
     """.split('\n')],
+    entry_points={
+        'console_scripts': [
+            "plot_mesh=bas_geoplot.cli:plot_mesh_cli"
+        ]
+    },
     packages=find_packages() + ["bas_geoplot.config"],
     zip_safe=False,
-    install_requires=get_content("requirements.txt"),
+    install_requires=requirements,
     include_package_data=True)
