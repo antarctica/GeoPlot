@@ -1,5 +1,6 @@
 from importlib.metadata import entry_points
 from setuptools import setup, find_packages
+import glob
 
 import bas_geoplot
 
@@ -35,6 +36,7 @@ setup(
         Programming Language :: Python :: 3.9
         Topic :: Scientific/Engineering
     """.split('\n')],
+    data_files= glob.glob('bas_geoplot/config/**'),
     entry_points={
         'console_scripts': [
             "plot_mesh=bas_geoplot.cli:plot_mesh_cli"
