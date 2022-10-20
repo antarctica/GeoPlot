@@ -1,4 +1,4 @@
 folium
 geopandas
-pandas>=1.4.3,<1.5
+pandas>=1.3.5,<1.5
 cartopy
