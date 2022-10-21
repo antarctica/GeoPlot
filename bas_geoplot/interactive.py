@@ -108,7 +108,7 @@ class Map:
             </h1>
             </body>
             '''.format(title)   
-        self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)#,width=720,height=460)
+        self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None,width=p['size'][0],height=p['size'][1])
         
         bsmap = folium.FeatureGroup(name='BaseMap')
         folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
@@ -351,18 +351,22 @@ class Map:
 
 
 
-    def Vectors(self,Currents,name,scale,show=True,predefined=None,**kwargs):
+    def Vectors(self,mesh,name,scale,show=True,predefined=None,**kwargs):
         '''
             Overlays a layer of vectors such as currents. 
             
             Attributes:
-                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Longitude ('X') Latitude ('Y'), Displacement in X ('U') and Displacement in Y ('Y').  
+                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Longitude ('cx') Latitude ('cy'), Displacement in X ('uC') and Displacement in Y ('vC').  
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
                 predefined (opt=None, srtring) - Predefiend plotting formats given in 
                     config/interactive.json of the package files
         '''
 
+
+        Currents = mesh[['cx','cy','uC','vC']]
+        Currents = Currents.rename(columns={'cx':'X','cy':'Y','vC':'V','uC':'U'})
+        Currents = Currents[(Currents['V']!=0.0)&(Currents['U']!=0.0)].reset_index(drop=True)
 
         vcts = self._layer(name,show=show)
         for idx,vec in Currents.iterrows():
