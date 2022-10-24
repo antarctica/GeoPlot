@@ -85,9 +85,6 @@
             "units":"km/hr"
 
         },
-
-
-
         "Extreme Sea Ice Conc":{
             "line_width":0.05,
             "fill_color":"red",
