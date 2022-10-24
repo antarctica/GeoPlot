@@ -108,7 +108,12 @@ class Map:
             </h1>
             </body>
             '''.format(title)   
-        self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None,width=p['size'][0],height=p['size'][1])
+
+        if 'size' in p.keys():
+            self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None,width=p['size'][0],height=p['size'][1])
+        else:
+            self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
+        
         
         bsmap = folium.FeatureGroup(name='BaseMap')
         folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
@@ -338,16 +343,16 @@ class Map:
         else:
             if p['data_name'] and (type(dataframe_geo[p['data_name']].iloc[0].item()) is bool):
                 dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']] == True]
-                
-            folium.GeoJson(
-                dataframe_geo,
-                style_function=lambda x: {
-                    'fillColor': p['fill_color'],
-                    'color': p['line_color'],
-                    'weight': p['line_width'],
-                    'fillOpacity': p['fill_opacity']
-                    }
-            ).add_to(feature_info)
+            if not dataframe_geo.empty:
+                folium.GeoJson(
+                    dataframe_geo,
+                    style_function=lambda x: {
+                        'fillColor': p['fill_color'],
+                        'color': p['line_color'],
+                        'weight': p['line_width'],
+                        'fillOpacity': p['fill_opacity']
+                        }
+                ).add_to(feature_info)
 
 
 

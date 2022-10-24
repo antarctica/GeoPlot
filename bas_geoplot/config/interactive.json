@@ -3,8 +3,7 @@
         "zoom_start":2.6,
         "plot_title":true,
         "title":null,
-        "offline_coastlines":null,
-        "size":[500,500]
+        "offline_coastlines":null
     },
     "Paths":{
         "line_width":4.0,
@@ -86,9 +85,6 @@
             "units":"km/hr"
 
         },
-
-
-
         "Extreme Sea Ice Conc":{
             "line_width":0.05,
             "fill_color":"red",
