@@ -1,5 +1,4 @@
 {   "Basemap":{
-        "map_centre":[-62.75,-62.75],
         "zoom_start":2.6,
         "plot_title":true,
         "title":null,
@@ -12,21 +11,69 @@
         "path_points":false,
         "data_name":null,
         "unit":"",
-        
-        "Route Fuel Paths":{
+        "scaling_factor":1.0,        
+        "Traveltime (Days)":{
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"traveltime",
+            "unit":"Days"
+        },
+        "Traveltime (Hrs)":{
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"traveltime",
+            "unit":"Hrs",
+            "scaling_factor":24.0
+        },
+        "Fuel":{
             "line_color":{
                 "color":"Dark2_03"
             },
             "data_name":"fuel",
             "unit":"Tonnes MGO"
         },
-        "Route Traveltime Paths":{
+        "tCO2e":{
+            "line_color":{
+                "color":"Dark2_03"
+            },
+            "data_name":"fuel",
+            "unit":"tCO2e",
+            "scaling_factor":3.25
+        },
+        "Max Speed (km/hr)":{
             "line_color":{
                 "color":"viridis"
             },
-            "data_name":"traveltime",
-            "unit":"Days"
+            "data_name":"speed",
+            "unit":"km/hr"
+        },
+        "Max Speed (knots)":{
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"speed",
+            "unit":"km/hr",
+            "scaling_factor":0.539957
+        },
+        "Distance (km)":{
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"distance",
+            "unit":"km",
+            "scaling_factor":0.001
+        },
+        "Distance (Nautical mile)":{
+            "line_color":{
+                "color":"viridis"
+            },
+            "data_name":"distance",
+            "unit":"Nautical mile",
+            "scaling_factor":0.000539957
         }
+
     },
     "Maps":{
         "line_width":0.6,
@@ -37,9 +84,6 @@
         "units":"",
         "trim_min": null,
         "trim_max": null,
-
-        "Fuel Usage Rate":{
-        },
         "SIC":{
             "line_color":"gray",
             "line_width":0.05,
@@ -51,7 +95,6 @@
             "fill_opacity":0.6,
             "data_name":"SIC",
             "units":"%"
-
         },
         "Elev":{
             "line_color":"gray",
@@ -62,9 +105,8 @@
             "fill_opacity":0.6,
             "data_name":"elevation",
             "units":"m"
-
         },
-        "Fuel":{
+        "Fuel (Tonnes/Day)":{
             "line_color":"gray",
             "line_width":0.05,
             "fill_color":{
@@ -74,7 +116,18 @@
             "data_name":"fuel",
             "units":"Tonnes/Day"
         },
-        "Speed":{
+        "tCO2e":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"YlOrRd_04"
+            },
+            "fill_opacity":0.6,
+            "data_name":"fuel",
+            "units":"tCO2e/Day",
+            "scaling_factor":3.25
+        },
+        "Max Speed (km/hr)":{
             "line_color":"gray",
             "line_width":0.05,
             "fill_color":{
@@ -83,7 +136,17 @@
             "fill_opacity":0.6,
             "data_name":"speed",
             "units":"km/hr"
-
+        },
+        "Max Speed (knots)":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"YlOrRd_04"
+            },
+            "fill_opacity":0.6,
+            "data_name":"speed",
+            "units":"knots",
+            "scaling_factor":0.539957
         },
         "Extreme Sea Ice Conc":{
             "line_width":0.05,
@@ -91,8 +154,6 @@
             "data_name": "ext_ice",
             "fill_opacity":0.6
         },
-
-
         "Land Mask":{
             "fill_opacity":0.6,
             "data_name":"land",

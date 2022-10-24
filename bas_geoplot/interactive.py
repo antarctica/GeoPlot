@@ -109,10 +109,16 @@ class Map:
             </body>
             '''.format(title)   
 
-        if 'size' in p.keys():
-            self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None,width=p['size'][0],height=p['size'][1])
+
+        if 'map_centre' in p.keys():
+            map_centre = p['map_centre']
         else:
-            self.map = folium.Map(location=p['map_centre'],zoom_start=p['zoom_start'],tiles=None)
+            map_centre = None
+
+        if 'size' in p.keys():
+            self.map = folium.Map(location=map_centre,zoom_start=p['zoom_start'],tiles=None,width=p['size'][0],height=p['size'][1])
+        else:
+            self.map = folium.Map(location=map_centre,zoom_start=p['zoom_start'],tiles=None)
         
         
         bsmap = folium.FeatureGroup(name='BaseMap')
@@ -188,11 +194,11 @@ class Map:
             max_val = -np.inf
             min_val = np.inf
             for path in copy.deepcopy(paths):
-                if np.array(path['properties'][p['data_name']]).max() > max_val:
-                    max_val = np.array(path['properties'][p['data_name']]).max()
+                if (np.array(path['properties'][p['data_name']])*p['scaling_factor']).max() > max_val:
+                    max_val = (np.array(path['properties'][p['data_name']])*p['scaling_factor']).max()
 
-                if np.array(path['properties'][p['data_name']]).min() < min_val:
-                    min_val = np.array(path['properties'][p['data_name']]).min()
+                if (np.array(path['properties'][p['data_name']])*p['scaling_factor']).min() < min_val:
+                    min_val = (np.array(path['properties'][p['data_name']])*p['scaling_factor']).min()
 
         # Determining max travel-times of all paths
         for path in paths:
@@ -202,7 +208,7 @@ class Map:
             end_wpt   = path['properties']['to']
 
             if p['data_name']:
-                data_val = np.array(path['properties'][p['data_name']])
+                data_val = np.array(path['properties'][p['data_name']])*p['scaling_factor']
             else:
                 data_val = np.array(len(points))
 
@@ -308,9 +314,12 @@ class Map:
 
         if p['data_name']:
             try:
-                dataframe_geo[p['data_name']]
+                if 'scaling_factor' in p.keys():
+                    dataframe_geo[p['data_name']] = dataframe_geo[p['data_name']]*p['scaling_factor']
+                else:
+                    dataframe_geo[p['data_name']] = dataframe_geo[p['data_name']]
             except:
-                print('Dataname not in variables')
+                raise print('Dataname not in variables')
 
 
 
@@ -322,13 +331,28 @@ class Map:
 
 
         if (type(p['fill_color']) is dict) and (p['data_name']):
-            dataframe_geo
             dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']].notna() & ~np.isinf(abs(dataframe_geo[p['data_name']]))]
-            cmin = dataframe_geo[p['data_name']].min()
-            cmax = dataframe_geo[p['data_name']].max()
+            
+            if 'cmin' in p['fill_color'].keys():
+                cmin = p['fill_color']['cmin']
+            else:
+                cmin = dataframe_geo[p['data_name']].min()
+            if 'max' in p['fill_color'].keys():
+                cmax = p['fill_color']['cmax']
+            else:
+                cmax = dataframe_geo[p['data_name']].max()
 
             colormap = linear._colormaps[p['fill_color']['colormap']].scale(cmin,cmax)
-            colormap.caption = '{} ({})'.format(name,p['units'])
+
+
+        
+            if len(dataframe_geo[p['data_name']].unique()) == 1:
+                print(dataframe_geo[p['data_name']].unique())
+                colormap.caption = '{} ({}, Singular Value = {:.3f})'.format(name,p['units'],dataframe_geo[p['data_name']].unique()[0])
+            else:
+                colormap.caption = '{} ({})'.format(name,p['units'])
+
+            
             folium.GeoJson(
                 dataframe_geo,
                 style_function=lambda x: {
