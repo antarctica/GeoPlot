@@ -1,9 +1,11 @@
 name: Publish ${package_name} to PyPI / GitHub
 
 on:
-  push:
-    tags:
-      - "v*"
+  pull_request:
+    types:
+      - "closed"
+    branches:
+      - "main"
       
 jobs:
   build-n-publish:
