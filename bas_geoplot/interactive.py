@@ -208,7 +208,10 @@ class Map:
             end_wpt   = path['properties']['to']
 
             if p['data_name']:
-                data_val = np.array(path['properties'][p['data_name']])*p['scaling_factor']
+                try:
+                    data_val = np.array(path['properties'][p['data_name']])*p['scaling_factor']
+                except:
+                    continue
             else:
                 data_val = np.array(len(points))
 
@@ -341,13 +344,9 @@ class Map:
                 cmax = p['fill_color']['cmax']
             else:
                 cmax = dataframe_geo[p['data_name']].max()
-
             colormap = linear._colormaps[p['fill_color']['colormap']].scale(cmin,cmax)
 
-
-        
             if len(dataframe_geo[p['data_name']].unique()) == 1:
-                print(dataframe_geo[p['data_name']].unique())
                 colormap.caption = '{} ({}, Singular Value = {:.3f})'.format(name,p['units'],dataframe_geo[p['data_name']].unique()[0])
             else:
                 colormap.caption = '{} ({})'.format(name,p['units'])
@@ -393,9 +392,12 @@ class Map:
         '''
 
 
-        Currents = mesh[['cx','cy','uC','vC']]
+        Currents = mesh
         Currents = Currents.rename(columns={'cx':'X','cy':'Y','vC':'V','uC':'U'})
         Currents = Currents[(Currents['V']!=0.0)&(Currents['U']!=0.0)].reset_index(drop=True)
+
+        if 'land' in Currents.keys():
+            Currents = Currents[Currents['land']==False].reset_index(drop=True)
 
         vcts = self._layer(name,show=show)
         for idx,vec in Currents.iterrows():

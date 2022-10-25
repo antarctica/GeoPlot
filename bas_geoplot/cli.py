@@ -9,22 +9,11 @@ from bas_geoplot.utils import setup_logging, timed_call
 @setup_logging
 def get_args(default_output: str):
     ap = argparse.ArgumentParser()
-
-    ap.add_argument("-o", "--output",
-                    default=default_output,
-                    help="Output file")
-    ap.add_argument("-v", "--verbose",
-                    default=False,
-                    action="store_true",
-                    help="Turn on DEBUG level logging")
-    ap.add_argument("-s", "--static",
-                    default=False,
-                    action="store_true",
-                    help="Save the plot as a static .PNG")           
-
-    ap.add_argument("mesh", type=argparse.FileType('r'),
-                    help="file location of mesh to be plot")
-
+    ap.add_argument("-o", "--output",default=default_output,help="Output file")
+    ap.add_argument("-v", "--verbose",default=False,action="store_true",help="Turn on DEBUG level logging")
+    ap.add_argument("-s", "--static",default=False,action="store_true",help="Save the plot as a static .PNG")           
+    ap.add_argument("-c", "--currents_paths",default='',help="Path to currents file")
+    ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
     return ap.parse_args()
 
 @timed_call
@@ -34,11 +23,8 @@ def plot_mesh_cli():
 
     args = get_args("interactive_plot.html")
     logging.info("{} {}".format(inspect.stack()[0][3][:-4], version))
-
     info = json.load(args.mesh)
-
     mesh = pd.DataFrame(info['cellboxes'])
-
     output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
     mp = Map(title=output)
     if 'SIC' in mesh.columns:
@@ -59,7 +45,14 @@ def plot_mesh_cli():
         mp.Maps(mesh, 'Max Speed', predefined = 'Max Speed (knots)', show = False)
     if ('uC' in mesh.columns) and ('vC' in mesh.columns):
         logging.debug('plotting currents')
-        mp.Vectors(mesh,'Currents',3.0)
+        if args.currents_paths != '':
+            logging.debug('plotting currents from file')
+            currents = pd.read_csv(args.currents_paths)
+            currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) & (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) & (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) & (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )].reset_index(drop=True)
+        else:
+            logging.debug('plotting currents from mesh')
+            currents = mesh
+        mp.Vectors(currents,'Currents',3.0,show=False)
     if 'paths' in info.keys():
         logging.debug('plotting paths')
         paths = info['paths']

@@ -89,8 +89,8 @@
             "line_width":0.05,
             "fill_color":{
                 "colormap":"BuPu_09",
-                "cmin":1e-4,
-                "cmax":100
+                "cmin":0.0,
+                "cmax":100.0
             },
             "fill_opacity":0.6,
             "data_name":"SIC",
