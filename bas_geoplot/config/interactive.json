@@ -192,5 +192,22 @@
             "color":"orange",
             "icon":"ship"
         }
+    },
+    "MeshInfo":{
+        "PolarRoute":{"fields":[
+            {"Name":"Sea Ice Concentration (%)","data":"SIC"},
+            {"Name":"Speed (km/hr)","data":"speed"},
+            {"Name":"Fuel (Tonnes/Day)","data":"fuel"},
+            {"Name":"Current Component X (m/s)","data":"uC"},
+            {"Name":"Current Component Y (m/s)","data":"vC"},
+            {"Name":"Current Magnitude (m/s)","data":"mC"},
+            {"Name":"Cell Centre X (deg)","data":"cx"},
+            {"Name":"Cell Centre Y (deg)","data":"cy"},
+            {"Name":"Cell Width (deg)","data":"dcx"},
+            {"Name":"Cell Height (deg)","data":"dcy"},
+            {"Name":"Cell ID","data":"id"},
+            {"Name":"Depth (km)","data":"elevation","scaling_factor":-0.001}
+            ]
+        }
     }
 }

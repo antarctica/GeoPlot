@@ -335,12 +335,11 @@ class Map:
 
         if (type(p['fill_color']) is dict) and (p['data_name']):
             dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']].notna() & ~np.isinf(abs(dataframe_geo[p['data_name']]))]
-            
             if 'cmin' in p['fill_color'].keys():
                 cmin = p['fill_color']['cmin']
             else:
                 cmin = dataframe_geo[p['data_name']].min()
-            if 'max' in p['fill_color'].keys():
+            if 'cmax' in p['fill_color'].keys():
                 cmax = p['fill_color']['cmax']
             else:
                 cmax = dataframe_geo[p['data_name']].max()
@@ -351,7 +350,6 @@ class Map:
             else:
                 colormap.caption = '{} ({})'.format(name,p['units'])
 
-            
             folium.GeoJson(
                 dataframe_geo,
                 style_function=lambda x: {
@@ -399,10 +397,12 @@ class Map:
         if 'land' in Currents.keys():
             Currents = Currents[Currents['land']==False].reset_index(drop=True)
 
+
         vcts = self._layer(name,show=show)
         for idx,vec in Currents.iterrows():
             loc =[[vec['Y'],vec['X']],[vec['Y']+vec['V']*scale,vec['X']+vec['U']*scale]]
-            folium.PolyLine(loc, color="gray",weight=1.4).add_to(vcts)
+            mag = np.sqrt(vec['V']**2 + vec['U']**2)
+            folium.PolyLine(loc, color="gray",weight=1.4, popup='{} (m/s)'.format(mag)).add_to(vcts)
             # get pieces of the line
             pairs = [(loc[idx], loc[idx-1]) for idx, val in enumerate(loc) if idx != 0]
             # get rotations from forward azimuth of the line pieces and add an offset of 90°
@@ -415,7 +415,7 @@ class Map:
 
 
 
-    def MeshInfo(self,cellboxes,name,show=True):
+    def MeshInfo(self,mesh,name,predefined='PolarRoute',show=True,**kwargs):
         '''
             Overlays a layer that gives information on all polygon boxes. 
             
@@ -427,11 +427,29 @@ class Map:
                     config/interactive.json of the package files
         '''
 
+        p = paramsObject('MeshInfo',predefined=predefined,**kwargs)
 
 
-        dataframe_pandas = pd.DataFrame(cellboxes)
+
+        dataframe_pandas = pd.DataFrame(mesh)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
+
+        p = p['fields']
+
+        column_names = []
+        column_names.append('geometry')
+        for col_info in p:
+            try:
+                column_name = col_info['Name']
+                data = col_info['data']
+                dataframe_geo[column_name] = dataframe_geo[data]
+                if 'scaling_factor' in col_info.keys():
+                    dataframe_geo[column_name] = dataframe_geo[column_name]*col_info['scaling_factor']
+                column_names.append(column_name)
+            except:
+                continue
+        dataframe_geo = dataframe_geo[column_names]
 
         feature_info = self._layer(name,show=show)
         folium.GeoJson(dataframe_geo,
