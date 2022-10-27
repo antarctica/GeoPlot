@@ -14,6 +14,7 @@ def get_args(default_output: str):
     ap.add_argument("-v", "--verbose",default=False,action="store_true",help="Turn on DEBUG level logging")
     ap.add_argument("-s", "--static",default=False,action="store_true",help="Save the plot as a static .PNG")           
     ap.add_argument("-c", "--currents_paths",default='',help="Path to currents file")
+    ap.add_argument("-l", "--coastlines",default='',help="Loading Offline Coastlines")
     ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
     return ap.parse_args()
 
@@ -29,7 +30,14 @@ def plot_mesh_cli():
 
     output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
     output = '{} | Start Date: {}, End Date: {}'.format(output, info['config']['Mesh_info']['Region']['startTime'], info['config']['Mesh_info']['Region']['endTime'])
-    mp = Map(title=output)
+
+
+    if args.coastlines != '':
+        mp = Map(title=output,offline_coastlines=args.coastlines)
+    else:
+        mp = Map(title=output)
+
+
     if 'SIC' in mesh.columns:
         logging.debug("plotting Sea Ice Concentration")
         mp.Maps(mesh,'SIC',predefined='SIC')
@@ -60,7 +68,7 @@ def plot_mesh_cli():
         logging.debug('plotting paths')
         paths = info['paths']
         mp.Paths(paths,'Routes - Traveltimes',predefined='Traveltime (Days)')
-        mp.Paths(paths,'Routes - Distance',predefined='Distance (km)',show=False)
+        mp.Paths(paths,'Routes - Distance',predefined='Distance (Nautical mile)',show=False)
         mp.Paths(paths,'Routes - Max Speed',predefined='Max Speed (knots)',show=False)
         mp.Paths(paths,'Routes - Fuel',predefined='Fuel',show=False)
         mp.Paths(paths,'Routes - tCO2e',predefined='tCO2e',show=False)

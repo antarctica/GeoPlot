@@ -32,14 +32,14 @@
                 "color":"Dark2_03"
             },
             "data_name":"fuel",
-            "unit":"Tonnes MGO"
+            "unit":"Tonnes MGO/Day"
         },
         "tCO2e":{
             "line_color":{
                 "color":"Dark2_03"
             },
             "data_name":"fuel",
-            "unit":"tCO2e",
+            "unit":"tCO2e/Day",
             "scaling_factor":3.25
         },
         "Max Speed (km/hr)":{
@@ -54,7 +54,7 @@
                 "color":"viridis"
             },
             "data_name":"speed",
-            "unit":"km/hr",
+            "unit":"knots",
             "scaling_factor":0.539957
         },
         "Distance (km)":{
@@ -196,17 +196,19 @@
     "MeshInfo":{
         "PolarRoute":{"fields":[
             {"Name":"Sea Ice Concentration (%)","data":"SIC"},
-            {"Name":"Speed (km/hr)","data":"speed"},
+            {"Name":"Max Speed (knot)","data":"speed","scaling_factor":0.539957},
+            {"Name":"Max Speed (km/hr)","data":"speed"},
             {"Name":"Fuel (Tonnes/Day)","data":"fuel"},
+            {"Name":"Current Magnitude (m/s)","data":"mC"},
             {"Name":"Current Component X (m/s)","data":"uC"},
             {"Name":"Current Component Y (m/s)","data":"vC"},
-            {"Name":"Current Magnitude (m/s)","data":"mC"},
-            {"Name":"Cell Centre X (deg)","data":"cx"},
-            {"Name":"Cell Centre Y (deg)","data":"cy"},
+            {"Name":"Depth (m)","data":"elevation","scaling_factor":-1},
+            {"Name":"Ice Resistance (N)","data":"ice resistance","scaling_factor":0.001},
+            {"Name":"Cell Centre Longitude (deg)","data":"cx"},
+            {"Name":"Cell Centre Latitude (deg)","data":"cy"},
             {"Name":"Cell Width (deg)","data":"dcx"},
             {"Name":"Cell Height (deg)","data":"dcy"},
-            {"Name":"Cell ID","data":"id"},
-            {"Name":"Depth (km)","data":"elevation","scaling_factor":-0.001}
+            {"Name":"Cell ID","data":"id"}
             ]
         }
     }
