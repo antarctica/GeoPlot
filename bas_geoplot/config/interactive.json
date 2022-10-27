@@ -5,7 +5,7 @@
         "offline_coastlines":null
     },
     "Paths":{
-        "line_width":4.0,
+        "line_width":3.0,
         "line_color":"black",
         "line_opacity":1.0,
         "path_points":false,
@@ -32,7 +32,7 @@
                 "color":"Dark2_03"
             },
             "data_name":"fuel",
-            "unit":"Tonnes MGO/Day"
+            "unit":"Tonnes/Day"
         },
         "tCO2e":{
             "line_color":{
@@ -65,12 +65,12 @@
             "unit":"km",
             "scaling_factor":0.001
         },
-        "Distance (Nautical mile)":{
+        "Distance (Nautical miles)":{
             "line_color":{
                 "color":"viridis"
             },
             "data_name":"distance",
-            "unit":"Nautical mile",
+            "unit":"Nautical miles",
             "scaling_factor":0.000539957
         }
 
@@ -196,14 +196,14 @@
     "MeshInfo":{
         "PolarRoute":{"fields":[
             {"Name":"Sea Ice Concentration (%)","data":"SIC"},
-            {"Name":"Max Speed (knot)","data":"speed","scaling_factor":0.539957},
+            {"Name":"Max Speed (knots)","data":"speed","scaling_factor":0.539957},
             {"Name":"Max Speed (km/hr)","data":"speed"},
             {"Name":"Fuel (Tonnes/Day)","data":"fuel"},
             {"Name":"Current Magnitude (m/s)","data":"mC"},
             {"Name":"Current Component X (m/s)","data":"uC"},
             {"Name":"Current Component Y (m/s)","data":"vC"},
-            {"Name":"Depth (m)","data":"elevation","scaling_factor":-1},
-            {"Name":"Ice Resistance (N)","data":"ice resistance","scaling_factor":0.001},
+            {"Name":"Minimum Depth (m)","data":"elevation","scaling_factor":-1},
+            {"Name":"Ice Resistance (kN)","data":"ice resistance","scaling_factor":0.001},
             {"Name":"Cell Centre Longitude (deg)","data":"cx"},
             {"Name":"Cell Centre Latitude (deg)","data":"cy"},
             {"Name":"Cell Width (deg)","data":"dcx"},

@@ -68,7 +68,7 @@ def plot_mesh_cli():
         logging.debug('plotting paths')
         paths = info['paths']
         mp.Paths(paths,'Routes - Traveltimes',predefined='Traveltime (Days)')
-        mp.Paths(paths,'Routes - Distance',predefined='Distance (Nautical mile)',show=False)
+        mp.Paths(paths,'Routes - Distance',predefined='Distance (Nautical miles)',show=False)
         mp.Paths(paths,'Routes - Max Speed',predefined='Max Speed (knots)',show=False)
         mp.Paths(paths,'Routes - Fuel',predefined='Fuel',show=False)
         mp.Paths(paths,'Routes - tCO2e',predefined='tCO2e',show=False)
