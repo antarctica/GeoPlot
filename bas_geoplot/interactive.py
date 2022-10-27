@@ -189,17 +189,25 @@ class Map:
         pths = self._layer(name,show=show)
         paths = geojson['features']
 
+
+        no_path_name = True
+        for path in copy.deepcopy(paths):
+            if p['data_name'] in path['properties'].keys():
+                no_path_name = False
+        if no_path_name:
+            return
+
+
         # Determining min-max values of all paths if colormap being used
         if type(p['line_color']) is dict:
             max_val = -np.inf
             min_val = np.inf
             for path in copy.deepcopy(paths):
-                if (np.array(path['properties'][p['data_name']])*p['scaling_factor']).max() > max_val:
-                    max_val = (np.array(path['properties'][p['data_name']])*p['scaling_factor']).max()
+                    if (np.array(path['properties'][p['data_name']])*p['scaling_factor']).max() > max_val:
+                        max_val = (np.array(path['properties'][p['data_name']])*p['scaling_factor']).max()
 
-                if (np.array(path['properties'][p['data_name']])*p['scaling_factor']).min() < min_val:
-                    min_val = (np.array(path['properties'][p['data_name']])*p['scaling_factor']).min()
-
+                    if (np.array(path['properties'][p['data_name']])*p['scaling_factor']).min() < min_val:
+                        min_val = (np.array(path['properties'][p['data_name']])*p['scaling_factor']).min()
         # Determining max travel-times of all paths
         for path in paths:
             points   = np.array(path['geometry']['coordinates'])
