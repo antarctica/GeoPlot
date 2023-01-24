@@ -159,6 +159,15 @@
             "color":"blue",
             "line_width":0.001,
             "scale":15
+        },
+        "Winds":{
+            "Long":"cx",
+            "Lat":"cy",
+            "U":"u10",
+            "V":"v10",
+            "color":"blue",
+            "line_width":0.001,
+            "scale":15
         }
     },
     "Route_Info": {

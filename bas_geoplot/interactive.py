@@ -121,12 +121,17 @@ class Map:
             self.map = folium.Map(location=map_centre,zoom_start=p['zoom_start'],tiles=None)
         
         
+
+        if p['offline_filepath']:
+            self._offline_mode = True
+            self._offline_mode_path = p['offline_filepath']
+
         bsmap = folium.FeatureGroup(name='BaseMap')
         folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
         bsmap.add_to(self.map)
 
         if p['offline_coastlines']:
-            bsmap = folium.FeatureGroup(name='Coastlines',show=False)
+            bsmap = folium.FeatureGroup(name='Coastlines',show=True)
             antarica = gpd.read_file(p['offline_coastlines'])
             folium.GeoJson(antarica,
                     style_function=lambda feature: {
@@ -165,10 +170,35 @@ class Map:
             Attributes:
                 file (str): File path for output 
         '''
-
-
         map = self.show()
-        map.save(file)
+
+
+        html = map.get_root().render()
+        if self._offline_mode:
+            html = html.replace('https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js',f'{os.path.join(self._offline_mode_path, "leaflet.js")}')
+            html = html.replace('https://code.jquery.com/jquery-1.12.4.min.js',f'{os.path.join(self._offline_mode_path, "jquery-1.12.4.min.js")}')
+            html = html.replace('https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js',f'{os.path.join(self._offline_mode_path, "bootstrap.min.js")}')
+            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js',f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.js")}')
+
+            html = html.replace('https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css',f'{os.path.join(self._offline_mode_path, "leaflet.css")}')
+            html = html.replace('https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css',f'{os.path.join(self._offline_mode_path, "bootstrap.min.css")}')
+            html = html.replace("https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css",f'{os.path.join(self._offline_mode_path, "bootstrap-theme.min.css")}')
+            html = html.replace("https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css",f'{os.path.join(self._offline_mode_path, "font-awesome.min.css")}')
+            html = html.replace("https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css",f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.css")}')
+            html = html.replace("https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css",f'{os.path.join(self._offline_mode_path, "leaflet.awesome.rotate.min.css")}')
+
+            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',f'{os.path.join(self._offline_mode_path, "d3.min.js")}')
+            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/0.3.0/leaflet-dvf.markers.min.js',f'{os.path.join(self._offline_mode_path, "leaflet-dvf.markers.min.js")}')
+            html = html.replace('https://i.ibb.co/XtZdzDt/BAS-colour-eps.png',f'{os.path.join(self._offline_mode_path, "BAS-colour-eps.png")}')
+
+            html = html.replace('https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.js',f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.js")}')
+            html = html.replace("https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.css",f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.css")}')
+
+            
+            
+        with open(file,'w') as fp:
+            fp.write(html)
+            fp.close()
 
 
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
@@ -385,7 +415,7 @@ class Map:
 
 
 
-    def Vectors(self,mesh,name,scale,show=True,predefined=None,**kwargs):
+    def Vectors(self,mesh,name,show=True,predefined=None,**kwargs):
         '''
             Overlays a layer of vectors such as currents. 
             
@@ -398,19 +428,26 @@ class Map:
         '''
 
 
-        Currents = mesh
-        Currents = Currents.rename(columns={'cx':'X','cy':'Y','vC':'V','uC':'U'})
-        Currents = Currents[(Currents['V']!=0.0)&(Currents['U']!=0.0)].reset_index(drop=True)
+        p = paramsObject('Vectors',predefined=predefined,**kwargs)
 
-        if 'land' in Currents.keys():
-            Currents = Currents[Currents['land']==False].reset_index(drop=True)
+
+        print(p)
+        
+        Vectors = mesh
+        print('Stage 1')
+        print(Vectors)
+        Vectors = Vectors[(Vectors[p['V']]!=0.0)&(Vectors[p['U']]!=0.0)].reset_index(drop=True)
+        print('Stage 2')
+
+        if 'land' in Vectors.keys():
+            Vectors = Vectors[Vectors['land']==False].reset_index(drop=True)
 
 
         vcts = self._layer(name,show=show)
-        for idx,vec in Currents.iterrows():
-            loc =[[vec['Y'],vec['X']],[vec['Y']+vec['V']*scale,vec['X']+vec['U']*scale]]
-            mag = np.sqrt(vec['V']**2 + vec['U']**2)
-            folium.PolyLine(loc, color="gray",weight=1.4, popup='{} (m/s)'.format(mag)).add_to(vcts)
+        for idx,vec in Vectors.iterrows():
+            loc =[[vec[p['Lat']],vec[p['Long']]],[vec[p['Lat']]+vec[p['V']]*p['scale'],vec[p['Long']]+vec[p['U']]*p['scale']]]
+            mag = np.sqrt(vec[p['V']]**2 + vec[p['U']]**2)
+            folium.PolyLine(loc, color=p['color'],weight=1.4, popup='{} (m/s)'.format(mag)).add_to(vcts)
             # get pieces of the line
             pairs = [(loc[idx], loc[idx-1]) for idx, val in enumerate(loc) if idx != 0]
             # get rotations from forward azimuth of the line pieces and add an offset of 90°
@@ -418,8 +455,8 @@ class Map:
             rotations = [geodesic.inv(pair[0][1], pair[0][0], pair[1][1], pair[1][0])[0]+90 for pair in pairs]
             # create your arrow
             for pair, rot in zip(pairs, rotations):
-                folium.RegularPolygonMarker(location=pair[0], color='gray', fill=True, fill_color='gray', fill_opacity=1,
-                                            number_of_sides=3, rotation=rot,radius=2,weight=0.8).add_to(vcts)
+                folium.RegularPolygonMarker(location=pair[0], color=p['color'], fill=True, fill_color=p['color'], fill_opacity=1,
+                                            number_of_sides=3, rotation=rot,radius=4,weight=p['line_width']).add_to(vcts)
 
 
 

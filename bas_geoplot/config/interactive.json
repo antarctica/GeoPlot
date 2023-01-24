@@ -2,7 +2,8 @@
         "zoom_start":2.6,
         "plot_title":true,
         "title":null,
-        "offline_coastlines":null
+        "offline_coastlines":null,
+        "offline_filepath":null
     },
     "Paths":{
         "line_width":3.0,
@@ -178,6 +179,33 @@
             "icon":"circle"
         }
         
+    },
+    "Vectors":{
+        "color": "blue",
+        "scale":25,
+        "line_width":0.001,
+        "Long":"Long",
+        "Lat":"Lat",
+        "U":"U",
+        "V":"V",
+        "Currents":{
+            "Long":"cx",
+            "Lat":"cy",
+            "U":"uC",
+            "V":"vC",
+            "color":"gray",
+            "line_width":0.001,
+            "scale":3
+        },
+        "Winds":{
+            "Long":"cx",
+            "Lat":"cy",
+            "U":"u10",
+            "V":"v10",
+            "color":"red",
+            "line_width":0.001,
+            "scale":0.1
+        }
     },
     "TimeData":{
         "period":"P1D",

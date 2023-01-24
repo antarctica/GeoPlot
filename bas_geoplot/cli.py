@@ -15,6 +15,7 @@ def get_args(default_output: str):
     ap.add_argument("-s", "--static",default=False,action="store_true",help="Save the plot as a static .PNG")           
     ap.add_argument("-c", "--currents_paths",default='',help="Path to currents file")
     ap.add_argument("-l", "--coastlines",default='',help="Loading Offline Coastlines")
+    ap.add_argument("-j", "--offline_filepath",default='',help="Location of Offline File Information")
     ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
     return ap.parse_args()
 
@@ -32,10 +33,22 @@ def plot_mesh_cli():
     output = '{} | Start Date: {}, End Date: {}'.format(output, info['config']['Mesh_info']['Region']['startTime'], info['config']['Mesh_info']['Region']['endTime'])
 
 
-    if args.coastlines != '':
-        mp = Map(title=output,offline_coastlines=args.coastlines)
+
+    if args.offline_filepath != '':
+        logging.debug("offline .js & .css datastore - {}".format(args.offline_filepath))
+        if args.coastlines != '':
+            mp = Map(title=output,offline_coastlines=args.coastlines,offline_filepath=args.offline_filepath)
+        else:
+            mp = Map(title=output,offline_filepath=args.offline_filepath)
     else:
-        mp = Map(title=output)
+        if args.coastlines != '':
+            mp = Map(title=output,offline_coastlines=args.coastlines)
+        else:
+            mp = Map(title=output)
+
+
+
+
 
 
     if 'SIC' in mesh.columns:
