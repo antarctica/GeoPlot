@@ -11,6 +11,7 @@ from folium.plugins import TimestampedGeoJson
 from branca.colormap import linear
 from branca.element import MacroElement
 from shapely import wkt
+from shapely.geometry import Polygon
 import geopandas as gpd
 from jinja2 import Template
 from pyproj import Geod
@@ -34,6 +35,52 @@ def paramsObject(layer,predefined=None,**kwargs):
         p[key] = value
 
     return p
+
+
+def build_sectors(cell_poly, dcx, dcy, cx, cy):
+
+    coords = list(cell_poly.exterior.coords)
+    x_gap = dcx - (np.sqrt(2) - 1) * dcy
+    y_gap = dcy - (np.sqrt(2) - 1) * dcx
+    centre = (cx, cy)
+
+    # Find coordinates of sector vertices on the cell edge
+    edge_coords = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    edge_coords[0] = (coords[0][0], coords[0][1] + y_gap)
+    edge_coords[1] = (coords[0][0], coords[0][1] + 2*dcy - y_gap)
+    edge_coords[2] = (coords[1][0] + x_gap, coords[1][1])
+    edge_coords[3] = (coords[1][0] + 2*dcx - x_gap, coords[1][1])
+    edge_coords[4] = (coords[2][0], coords[2][1] - y_gap)
+    edge_coords[5] = (coords[2][0], coords[2][1] - 2*dcy + y_gap)
+    edge_coords[6] = (coords[3][0] - x_gap, coords[3][1])
+    edge_coords[7] = (coords[3][0] - 2*dcx + x_gap, coords[3][1])
+
+    # Construct polygons in the order of the cases 1,2...-4
+    sec_polys = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    sec_polys[0] = Polygon([centre, edge_coords[3], coords[2], edge_coords[4]])
+    sec_polys[1] = Polygon([centre, edge_coords[4], edge_coords[5], centre])
+    sec_polys[2] = Polygon([centre, edge_coords[5], coords[3], edge_coords[6]])
+    sec_polys[3] = Polygon([centre, edge_coords[6], edge_coords[7], centre])
+    sec_polys[4] = Polygon([centre, edge_coords[7], coords[0], edge_coords[0]])
+    sec_polys[5] = Polygon([centre, edge_coords[0], edge_coords[1]])
+    sec_polys[6] = Polygon([centre, edge_coords[1], coords[1], edge_coords[2]])
+    sec_polys[7] = Polygon([centre, edge_coords[2], edge_coords[3]])
+
+    return sec_polys
+
+
+def sectorise_df(df,dn):
+
+    sec_df = pd.DataFrame(columns=[dn,'geometry'])
+
+    for i, row in df.iterrows():
+        sec_polys = build_sectors(row['geometry'], row['dcx'], row['dcy'], row['cx'], row['cy'])
+        for j, poly in enumerate(sec_polys):
+            idx = i*8 + j
+            sec_df.loc[idx] = {dn:row[dn][j], 'geometry':poly}
+    return sec_df
 
 
 class BindColormap(MacroElement):
@@ -81,7 +128,7 @@ class Map:
             ---
 
             Attributes:
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
                 **kwargs - Can be used to change information within the configuration files. See manual for more information.
             ---
@@ -132,8 +179,8 @@ class Map:
 
         if p['offline_coastlines']:
             bsmap = folium.FeatureGroup(name='Coastlines',show=True)
-            antarica = gpd.read_file(p['offline_coastlines'])
-            folium.GeoJson(antarica,
+            antarctica = gpd.read_file(p['offline_coastlines'])
+            folium.GeoJson(antarctica,
                     style_function=lambda feature: {
                         'color': 'black',
                         'weight': 0.5,
@@ -155,21 +202,21 @@ class Map:
             self._layer_info[key].add_to(self.map)
 
     def show(self):
-        '''
-            For usecase in interactive notebooks, showing the plot.
-        '''
+        """
+            For use case in interactive notebooks, showing the plot.
+        """
 
         self._add_plots_map()
         folium.LayerControl(collapsed=True).add_to(self.map)
         return self.map
 
     def save(self,file):
-        '''
+        """
             Saving the interactive plot to file
 
             Attributes:
-                file (str): File path for output 
-        '''
+                file (str): File path for output
+        """
         map = self.show()
 
 
@@ -202,17 +249,17 @@ class Map:
 
 
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
-        '''
+        """
             Overlays paths on the interactive plot with layer defined by `name`
 
             Attributes:
-                geojson (dict): A geojson file with several features representing all 
+                geojson (dict): A geojson file with several features representing all
                     the separate paths
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
         p = paramsObject('Paths',predefined=predefined,**kwargs)
 
         # Defining the feature groups to add
@@ -291,16 +338,16 @@ class Map:
 
 
     def Points(self,dataframe_points,name,show=True,predefined=None,**kwargs):
-        '''
+        """
             Overlays small collection of Points, such as waypoints and sites of interest.
 
             Attributes:
-                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Latitude ('Lat') Longitude ('Long'), Name ('Name').  
+                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Latitude ('Lat') Longitude ('Long'), Name ('Name').
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
 
         p = paramsObject('Points',predefined=predefined,**kwargs)
 
@@ -334,20 +381,23 @@ class Map:
 
 
     def Maps(self,dataframe_pandas,name,show=True,predefined=None,**kwargs):
-        '''
-            Overlays a layer of vectors such as currents. 
-            
+        """
+            Overlays a layer of vectors such as currents.
+
             Attributes:
-                dataframe_pandas (GeoPandas DataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'. Additional plotting of specfic columns is done in the configuration files.  
+                dataframe_pandas (GeoPandas DataFrame): A Dataframe in Geopandas format. This requires at least a column
+                    with 'geometry'. Additional plotting of specific columns is done in the configuration files.
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
         p = paramsObject('Maps',predefined=predefined,**kwargs)
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
+        if type(dataframe_pandas[p['data_name']][0]) is list:
+            dataframe_pandas = sectorise_df(dataframe_pandas, p['data_name'])
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
 
         feature_info = self._layer(name,show=show)
@@ -360,7 +410,7 @@ class Map:
                 else:
                     dataframe_geo[p['data_name']] = dataframe_geo[p['data_name']]
             except:
-                raise print('Dataname not in variables')
+                raise print('Data name not in variables')
 
 
 
@@ -416,16 +466,16 @@ class Map:
 
 
     def Vectors(self,mesh,name,show=True,predefined=None,**kwargs):
-        '''
-            Overlays a layer of vectors such as currents. 
-            
+        """
+            Overlays a layer of vectors such as currents.
+
             Attributes:
-                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Longitude ('cx') Latitude ('cy'), Displacement in X ('uC') and Displacement in Y ('vC').  
+                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Longitude ('cx') Latitude ('cy'), Displacement in X ('uC') and Displacement in Y ('vC').
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
 
 
         p = paramsObject('Vectors',predefined=predefined,**kwargs)
@@ -461,16 +511,16 @@ class Map:
 
 
     def MeshInfo(self,mesh,name,predefined='PolarRoute',show=True,**kwargs):
-        '''
-            Overlays a layer that gives information on all polygon boxes. 
-            
+        """
+            Overlays a layer that gives information on all polygon boxes.
+
             Attributes:
-                cellboxes (GeodataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'.  
+                cellboxes (GeodataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'.
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
 
         p = paramsObject('MeshInfo',predefined=predefined,**kwargs)
 

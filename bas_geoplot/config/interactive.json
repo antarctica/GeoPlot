@@ -97,6 +97,17 @@
             "data_name":"SIC",
             "units":"%"
         },
+        "Wind Resistance": {
+            "line_color":"gray",
+            "line_width":0.01,
+            "fill_color":{
+                "colormap":"YlOrRd_04"
+            },
+            "fill_opacity":0.6,
+            "data_name":"wind resistance",
+            "units":"kN",
+            "scaling_factor":0.001
+        },
         "Elev":{
             "line_color":"gray",
             "line_width":0.05,
@@ -202,7 +213,7 @@
             "Lat":"cy",
             "U":"u10",
             "V":"v10",
-            "color":"red",
+            "color":"gray",
             "line_width":0.001,
             "scale":0.1
         }
