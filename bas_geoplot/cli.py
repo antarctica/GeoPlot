@@ -74,8 +74,8 @@ def plot_mesh_cli():
             logging.debug('plotting currents from file')
             currents = pd.read_csv(args.currents_paths)
             currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) & (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) & (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) & (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )].reset_index(drop=True)
-            mp.Vectors(currents,'Currents - Raw Data',3.0,show=False)
-        mp.Vectors(mesh,'Currents - Mesh',3.0,show=False)
+            mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
+        mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
 
     if 'paths' in info.keys():
         logging.debug('plotting paths')
