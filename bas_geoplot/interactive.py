@@ -125,6 +125,8 @@ class Map:
         if p['offline_filepath']:
             self._offline_mode = True
             self._offline_mode_path = p['offline_filepath']
+        else:
+            self._offline_mode = False
 
         bsmap = folium.FeatureGroup(name='BaseMap')
         folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
@@ -360,7 +362,7 @@ class Map:
                 else:
                     dataframe_geo[p['data_name']] = dataframe_geo[p['data_name']]
             except:
-                raise print('Dataname not in variables')
+                raise print('Data name not in variables')
 
 
 
@@ -430,18 +432,12 @@ class Map:
 
         p = paramsObject('Vectors',predefined=predefined,**kwargs)
 
-
-        print(p)
-        
         Vectors = mesh
-        print('Stage 1')
-        print(Vectors)
         Vectors = Vectors[(Vectors[p['V']]!=0.0)&(Vectors[p['U']]!=0.0)].reset_index(drop=True)
-        print('Stage 2')
+        Vectors = Vectors.dropna(subset=[p['U'], p['V']]).reset_index(drop=True)
 
         if 'land' in Vectors.keys():
             Vectors = Vectors[Vectors['land']==False].reset_index(drop=True)
-
 
         vcts = self._layer(name,show=show)
         for idx,vec in Vectors.iterrows():
