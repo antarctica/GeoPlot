@@ -11,6 +11,7 @@ from folium.plugins import TimestampedGeoJson
 from branca.colormap import linear
 from branca.element import MacroElement
 from shapely import wkt
+from shapely.geometry import Polygon
 import geopandas as gpd
 from jinja2 import Template
 from pyproj import Geod
@@ -34,6 +35,52 @@ def paramsObject(layer,predefined=None,**kwargs):
         p[key] = value
 
     return p
+
+
+def build_sectors(cell_poly, dcx, dcy, cx, cy):
+
+    coords = list(cell_poly.exterior.coords)
+    x_gap = dcx - (np.sqrt(2) - 1) * dcy
+    y_gap = dcy - (np.sqrt(2) - 1) * dcx
+    centre = (cx, cy)
+
+    # Find coordinates of sector vertices on the cell edge
+    edge_coords = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    edge_coords[0] = (coords[0][0], coords[0][1] + y_gap)
+    edge_coords[1] = (coords[0][0], coords[0][1] + 2*dcy - y_gap)
+    edge_coords[2] = (coords[1][0] + x_gap, coords[1][1])
+    edge_coords[3] = (coords[1][0] + 2*dcx - x_gap, coords[1][1])
+    edge_coords[4] = (coords[2][0], coords[2][1] - y_gap)
+    edge_coords[5] = (coords[2][0], coords[2][1] - 2*dcy + y_gap)
+    edge_coords[6] = (coords[3][0] - x_gap, coords[3][1])
+    edge_coords[7] = (coords[3][0] - 2*dcx + x_gap, coords[3][1])
+
+    # Construct polygons in the order of the cases 1,2...-4
+    sec_polys = [0, 0, 0, 0, 0, 0, 0, 0]
+
+    sec_polys[0] = Polygon([centre, edge_coords[3], coords[2], edge_coords[4]])
+    sec_polys[1] = Polygon([centre, edge_coords[4], edge_coords[5], centre])
+    sec_polys[2] = Polygon([centre, edge_coords[5], coords[3], edge_coords[6]])
+    sec_polys[3] = Polygon([centre, edge_coords[6], edge_coords[7], centre])
+    sec_polys[4] = Polygon([centre, edge_coords[7], coords[0], edge_coords[0]])
+    sec_polys[5] = Polygon([centre, edge_coords[0], edge_coords[1]])
+    sec_polys[6] = Polygon([centre, edge_coords[1], coords[1], edge_coords[2]])
+    sec_polys[7] = Polygon([centre, edge_coords[2], edge_coords[3]])
+
+    return sec_polys
+
+
+def sectorise_df(df,dn):
+
+    sec_df = pd.DataFrame(columns=[dn,'geometry'])
+
+    for i, row in df.iterrows():
+        sec_polys = build_sectors(row['geometry'], row['dcx'], row['dcy'], row['cx'], row['cy'])
+        for j, poly in enumerate(sec_polys):
+            idx = i*8 + j
+            sec_df.loc[idx] = {dn:row[dn][j], 'geometry':poly}
+    return sec_df
 
 
 class BindColormap(MacroElement):
@@ -81,7 +128,7 @@ class Map:
             ---
 
             Attributes:
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
                 **kwargs - Can be used to change information within the configuration files. See manual for more information.
             ---
@@ -134,8 +181,8 @@ class Map:
 
         if p['offline_coastlines']:
             bsmap = folium.FeatureGroup(name='Coastlines',show=True)
-            antarica = gpd.read_file(p['offline_coastlines'])
-            folium.GeoJson(antarica,
+            antarctica = gpd.read_file(p['offline_coastlines'])
+            folium.GeoJson(antarctica,
                     style_function=lambda feature: {
                         'color': 'black',
                         'weight': 0.5,
@@ -157,21 +204,21 @@ class Map:
             self._layer_info[key].add_to(self.map)
 
     def show(self):
-        '''
-            For usecase in interactive notebooks, showing the plot.
-        '''
+        """
+            For use case in interactive notebooks, showing the plot.
+        """
 
         self._add_plots_map()
         folium.LayerControl(collapsed=True).add_to(self.map)
         return self.map
 
     def save(self,file):
-        '''
+        """
             Saving the interactive plot to file
 
             Attributes:
-                file (str): File path for output 
-        '''
+                file (str): File path for output
+        """
         map = self.show()
 
 
@@ -204,17 +251,17 @@ class Map:
 
 
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
-        '''
+        """
             Overlays paths on the interactive plot with layer defined by `name`
 
             Attributes:
-                geojson (dict): A geojson file with several features representing all 
+                geojson (dict): A geojson file with several features representing all
                     the separate paths
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
         p = paramsObject('Paths',predefined=predefined,**kwargs)
 
         # Defining the feature groups to add
@@ -293,16 +340,16 @@ class Map:
 
 
     def Points(self,dataframe_points,name,show=True,predefined=None,**kwargs):
-        '''
+        """
             Overlays small collection of Points, such as waypoints and sites of interest.
 
             Attributes:
-                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Latitude ('Lat') Longitude ('Long'), Name ('Name').  
+                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Latitude ('Lat') Longitude ('Long'), Name ('Name').
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
 
         p = paramsObject('Points',predefined=predefined,**kwargs)
 
@@ -335,21 +382,29 @@ class Map:
         wpts.add_to(self.map)
 
 
-    def Maps(self,dataframe_pandas,name,show=True,predefined=None,**kwargs):
-        '''
-            Overlays a layer of vectors such as currents. 
-            
+    def Maps(self,dataframe_pandas,name,show=True,predefined=None,plot_sectors=False,**kwargs):
+        """
+            Overlays a layer of scalars or booleans such as sea ice concentration or land.
+
             Attributes:
-                dataframe_pandas (GeoPandas DataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'. Additional plotting of specfic columns is done in the configuration files.  
+                dataframe_pandas (GeoPandas DataFrame): A Dataframe in Geopandas format. This requires at least a column
+                    with 'geometry'. Additional plotting of specific columns is done in the configuration files.
                 name (string): Layer name to add to the interactive plot
-                show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
-                    config/interactive.json of the package files
-        '''
+                show (opt=True, boolean): Show the layer on loading of plot
+                predefined (opt=None, string): Predefined plotting formats given in config/interactive.json of the
+                    package files
+                plot_sectors (boolean): Display sectorised list values as eight individual polygons
+        """
         p = paramsObject('Maps',predefined=predefined,**kwargs)
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
+        # For array values we either plot each value as a separate polygon or just the average of the values in the list
+        if type(dataframe_pandas[p['data_name']][0]) is list:
+            if plot_sectors:
+                dataframe_pandas = sectorise_df(dataframe_pandas, p['data_name'])
+            else:
+                dataframe_pandas[p['data_name']] = [np.mean(dn) for dn in dataframe_pandas[p['data_name']]]
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
 
         feature_info = self._layer(name,show=show)
@@ -418,16 +473,16 @@ class Map:
 
 
     def Vectors(self,mesh,name,show=True,predefined=None,**kwargs):
-        '''
-            Overlays a layer of vectors such as currents. 
-            
+        """
+            Overlays a layer of vectors such as currents.
+
             Attributes:
-                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Longitude ('cx') Latitude ('cy'), Displacement in X ('uC') and Displacement in Y ('vC').  
+                dataframe_points (Pandas DataFrame): A Dataframe requiring at least columns of Longitude ('cx') Latitude ('cy'), Displacement in X ('uC') and Displacement in Y ('vC').
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
 
 
         p = paramsObject('Vectors',predefined=predefined,**kwargs)
@@ -457,16 +512,16 @@ class Map:
 
 
     def MeshInfo(self,mesh,name,predefined='PolarRoute',show=True,**kwargs):
-        '''
-            Overlays a layer that gives information on all polygon boxes. 
-            
+        """
+            Overlays a layer that gives information on all polygon boxes.
+
             Attributes:
-                cellboxes (GeodataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'.  
+                cellboxes (GeodataFrame): A Dataframe in Geopandas format. This requires at least a column with 'geometry'.
                 name (string): Layer name to add to the interactive plot
                 show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, srtring) - Predefiend plotting formats given in 
+                predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
-        '''
+        """
 
         p = paramsObject('MeshInfo',predefined=predefined,**kwargs)
 
@@ -678,64 +733,6 @@ class Map:
 #     return map
 
 
-# def MapCurrents(cellGrid,map,show=False,scale=15):
-#     import folium
-#     from pyproj import Geod
-#     def bearing(st,en):
-#         import numpy as np
-#         long1,lat1 = st
-#         long2,lat2 = en
-#         dlong = long2-long1
-#         dlat  = lat2-lat1
-#         vector_1 = [0, 1]
-#         vector_2 = [dlong, dlat]
-#         if np.linalg.norm(vector_2) == 0:
-#             return np.nan
-#         unit_vector_1 = vector_1 / np.linalg.norm(vector_1)
-#         unit_vector_2 = vector_2 / np.linalg.norm(vector_2)
-#         dot_product = np.dot(unit_vector_1, unit_vector_2)
-#         angle = np.arccos(dot_product)/(np.pi/180)*np.sign(vector_2[0])
-#         if (angle==0) & (np.sign(dlat)==-1):
-#             angle=180
-#         if angle < 0:
-#             angle = angle +360
-#         angle
-#         return angle
-
-#     cellGrid
-#     X=[];Y=[];U=[];V=[];
-#     for ii in range(len(cellGrid.cellBoxes)):
-#         cellbox = cellGrid.cellBoxes[ii]
-#         if not isinstance(cellbox, CellBox):
-#             continue
-
-#         X.append(cellbox.cx)
-#         Y.append(cellbox.cy)
-#         U.append(cellbox.getuC())
-#         V.append(cellbox.getvC())
-#     Currents = pd.DataFrame({'X':X,'Y':Y,'U':U,'V':V})
-#     Currents = Currents.dropna()
-#     Currents['X'] = Currents['X']
-
-
-#     vectors = folium.FeatureGroup(name='Currents',show=show)
-#     for idx,vec in Currents.iterrows():
-#         loc =[[vec['Y'],vec['X']],[vec['Y']+vec['V']*scale,vec['X']+vec['U']*scale]]
-#         folium.PolyLine(loc, color="gray",weight=1.4).add_to(vectors)
-#         # get pieces of the line
-#         pairs = [(loc[idx], loc[idx-1]) for idx, val in enumerate(loc) if idx != 0]
-#         # get rotations from forward azimuth of the line pieces and add an offset of 90°
-#         geodesic = Geod(ellps='WGS84')
-#         rotations = [geodesic.inv(pair[0][1], pair[0][0], pair[1][1], pair[1][0])[0]+90 for pair in pairs]
-#         # create your arrow
-#         for pair, rot in zip(pairs, rotations):
-#             folium.RegularPolygonMarker(location=pair[0], color='gray', fill=True, fill_color='gray', fill_opacity=1,
-#                                         number_of_sides=3, rotation=rot,radius=2,weight=0.8).add_to(vectors)
-
-#     vectors.add_to(map)
-#     return map
-
-
 # def MapMesh(cellGrid,map,threshold=0.8):
 #     DF = MeshDF(cellGrid)
 #     LandDF = DF[DF['Land'] == True]
@@ -808,18 +805,4 @@ class Map:
 #         name='Land Grid'
 #     ).add_to(meshInfo)
 #     meshInfo.add_to(map)
-#     return map
-
-
-# def BaseMap(location=[-58,-63.7],logo=True,logoPos=[5,88]):
-#     map = folium.Map(location=location,zoom_start=2.6,tiles=None)
-#     bsmap = folium.FeatureGroup(name='BaseMap')
-#     folium.TileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
-#     bsmap.add_to(map)
-#     if logo:
-#         folium.plugins.FloatImage('https://i.ibb.co/JH2zknX/Small-Logo.png',bottom=logoPos[1],left=logoPos[0]).add_to(map)
-#     return map
-
-# def LayerControl(map,collapsed=True):
-#     folium.LayerControl(collapsed=collapsed).add_to(map)
 #     return map
