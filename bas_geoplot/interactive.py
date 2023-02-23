@@ -737,64 +737,6 @@ class Map:
 #     return map
 
 
-# def MapCurrents(cellGrid,map,show=False,scale=15):
-#     import folium
-#     from pyproj import Geod
-#     def bearing(st,en):
-#         import numpy as np
-#         long1,lat1 = st
-#         long2,lat2 = en
-#         dlong = long2-long1
-#         dlat  = lat2-lat1
-#         vector_1 = [0, 1]
-#         vector_2 = [dlong, dlat]
-#         if np.linalg.norm(vector_2) == 0:
-#             return np.nan
-#         unit_vector_1 = vector_1 / np.linalg.norm(vector_1)
-#         unit_vector_2 = vector_2 / np.linalg.norm(vector_2)
-#         dot_product = np.dot(unit_vector_1, unit_vector_2)
-#         angle = np.arccos(dot_product)/(np.pi/180)*np.sign(vector_2[0])
-#         if (angle==0) & (np.sign(dlat)==-1):
-#             angle=180
-#         if angle < 0:
-#             angle = angle +360
-#         angle
-#         return angle
-
-#     cellGrid
-#     X=[];Y=[];U=[];V=[];
-#     for ii in range(len(cellGrid.cellBoxes)):
-#         cellbox = cellGrid.cellBoxes[ii]
-#         if not isinstance(cellbox, CellBox):
-#             continue
-
-#         X.append(cellbox.cx)
-#         Y.append(cellbox.cy)
-#         U.append(cellbox.getuC())
-#         V.append(cellbox.getvC())
-#     Currents = pd.DataFrame({'X':X,'Y':Y,'U':U,'V':V})
-#     Currents = Currents.dropna()
-#     Currents['X'] = Currents['X']
-
-
-#     vectors = folium.FeatureGroup(name='Currents',show=show)
-#     for idx,vec in Currents.iterrows():
-#         loc =[[vec['Y'],vec['X']],[vec['Y']+vec['V']*scale,vec['X']+vec['U']*scale]]
-#         folium.PolyLine(loc, color="gray",weight=1.4).add_to(vectors)
-#         # get pieces of the line
-#         pairs = [(loc[idx], loc[idx-1]) for idx, val in enumerate(loc) if idx != 0]
-#         # get rotations from forward azimuth of the line pieces and add an offset of 90°
-#         geodesic = Geod(ellps='WGS84')
-#         rotations = [geodesic.inv(pair[0][1], pair[0][0], pair[1][1], pair[1][0])[0]+90 for pair in pairs]
-#         # create your arrow
-#         for pair, rot in zip(pairs, rotations):
-#             folium.RegularPolygonMarker(location=pair[0], color='gray', fill=True, fill_color='gray', fill_opacity=1,
-#                                         number_of_sides=3, rotation=rot,radius=2,weight=0.8).add_to(vectors)
-
-#     vectors.add_to(map)
-#     return map
-
-
 # def MapMesh(cellGrid,map,threshold=0.8):
 #     DF = MeshDF(cellGrid)
 #     LandDF = DF[DF['Land'] == True]
@@ -867,18 +809,4 @@ class Map:
 #         name='Land Grid'
 #     ).add_to(meshInfo)
 #     meshInfo.add_to(map)
-#     return map
-
-
-# def BaseMap(location=[-58,-63.7],logo=True,logoPos=[5,88]):
-#     map = folium.Map(location=location,zoom_start=2.6,tiles=None)
-#     bsmap = folium.FeatureGroup(name='BaseMap')
-#     folium.TileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
-#     bsmap.add_to(map)
-#     if logo:
-#         folium.plugins.FloatImage('https://i.ibb.co/JH2zknX/Small-Logo.png',bottom=logoPos[1],left=logoPos[0]).add_to(map)
-#     return map
-
-# def LayerControl(map,collapsed=True):
-#     folium.LayerControl(collapsed=collapsed).add_to(map)
 #     return map
