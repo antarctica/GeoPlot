@@ -380,24 +380,29 @@ class Map:
         wpts.add_to(self.map)
 
 
-    def Maps(self,dataframe_pandas,name,show=True,predefined=None,**kwargs):
+    def Maps(self,dataframe_pandas,name,show=True,predefined=None,plot_sectors=False,**kwargs):
         """
-            Overlays a layer of vectors such as currents.
+            Overlays a layer of scalars or booleans such as sea ice concentration or land.
 
             Attributes:
                 dataframe_pandas (GeoPandas DataFrame): A Dataframe in Geopandas format. This requires at least a column
                     with 'geometry'. Additional plotting of specific columns is done in the configuration files.
                 name (string): Layer name to add to the interactive plot
-                show (opt=True, boolean) - Show the layer on loading of plot
-                predefined (opt=None, string) - Predefined plotting formats given in
-                    config/interactive.json of the package files
+                show (opt=True, boolean): Show the layer on loading of plot
+                predefined (opt=None, string): Predefined plotting formats given in config/interactive.json of the
+                    package files
+                plot_sectors (boolean): Display sectorised list values as eight individual polygons
         """
         p = paramsObject('Maps',predefined=predefined,**kwargs)
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
+        # For array values we either plot each value as a separate polygon or just the average of the values in the list
         if type(dataframe_pandas[p['data_name']][0]) is list:
-            dataframe_pandas = sectorise_df(dataframe_pandas, p['data_name'])
+            if plot_sectors:
+                dataframe_pandas = sectorise_df(dataframe_pandas, p['data_name'])
+            else:
+                dataframe_pandas[p['data_name']] = [np.mean(dn) for dn in dataframe_pandas[p['data_name']]]
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
 
         feature_info = self._layer(name,show=show)

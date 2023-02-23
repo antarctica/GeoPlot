@@ -16,6 +16,7 @@ def get_args(default_output: str):
     ap.add_argument("-c", "--currents_paths",default='',help="Path to currents file")
     ap.add_argument("-l", "--coastlines",default='',help="Loading Offline Coastlines")
     ap.add_argument("-j", "--offline_filepath",default='',help="Location of Offline File Information")
+    ap.add_argument("-p", "--plot_sectors",default=False,action="store_true",help="Plot array values as separate polygons")
     ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
     return ap.parse_args()
 
@@ -33,7 +34,6 @@ def plot_mesh_cli():
     output = '{} | Start Date: {}, End Date: {}'.format(output, info['config']['Mesh_info']['Region']['startTime'], info['config']['Mesh_info']['Region']['endTime'])
 
 
-
     if args.offline_filepath != '':
         logging.debug("offline .js & .css datastore - {}".format(args.offline_filepath))
         if args.coastlines != '':
@@ -47,10 +47,6 @@ def plot_mesh_cli():
             mp = Map(title=output)
 
 
-
-
-
-
     if 'SIC' in mesh.columns:
         logging.debug("plotting Sea Ice Concentration")
         mp.Maps(mesh,'SIC',predefined='SIC')
@@ -62,11 +58,11 @@ def plot_mesh_cli():
         mp.Maps(mesh,'Land Mask',predefined='Land Mask')
     if 'fuel' in mesh.columns:
         logging.debug('plotting Fuel usage per day and tCO2e')
-        mp.Maps(mesh,'Fuel',predefined='Fuel (Tonnes/Day)',show=False)
-        mp.Maps(mesh,'tCO2e',predefined='tCO2e',show=False)
+        mp.Maps(mesh,'Fuel',predefined='Fuel (Tonnes/Day)',show=False,plot_sectors=args.plot_sectors)
+        mp.Maps(mesh,'tCO2e',predefined='tCO2e',show=False,plot_sectors=args.plot_sectors)
     if 'speed' in mesh.columns:
         logging.debug('plotting vessel maximum speed')
-        mp.Maps(mesh, 'Max Speed', predefined = 'Max Speed (knots)', show = False)
+        mp.Maps(mesh,'Max Speed',predefined='Max Speed (knots)',show=False,plot_sectors=args.plot_sectors)
     if ('uC' in mesh.columns) and ('vC' in mesh.columns):
         mesh['mC'] = np.sqrt(mesh['uC']**2 + mesh['vC']**2)
         logging.debug('plotting currents')
