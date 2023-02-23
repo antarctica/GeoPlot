@@ -399,6 +399,11 @@ class Map:
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
+
+        # Don't plot anything in the land cells unless, of course, we are plotting the land mask
+        if 'land' in dataframe_pandas.keys() and p['data_name'] != 'land':
+            dataframe_pandas = dataframe_pandas[dataframe_pandas['land']==False].reset_index(drop=True)
+
         # For array values we either plot each value as a separate polygon or just the average of the values in the list
         if type(dataframe_pandas[p['data_name']][0]) is list:
             if plot_sectors:
