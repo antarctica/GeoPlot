@@ -209,7 +209,7 @@ class Map:
         """
 
         self._add_plots_map()
-        folium.LayerControl(collapsed=True).add_to(self.map)
+        folium.LayerControl('topleft', collapsed=True).add_to(self.map)
         return self.map
 
     def save(self,file):
