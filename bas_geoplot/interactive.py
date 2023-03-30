@@ -302,6 +302,9 @@ class Map:
             else:
                 data_val = np.array(len(points))
 
+            # Find the max value for this path for display in pop-up
+            path_max = np.max(data_val)
+
             points[:,0] = points[:,0]
             points = points[:,::-1]
 
@@ -313,12 +316,16 @@ class Map:
 
                 colormap = linear._colormaps[p["line_color"]['color']].scale(min_val,max_val)
                 colormap.caption = '{} ({},Max Value={:.3f})'.format(name,p['unit'],max_val)
-                folium.ColorLine(points,data_val,colormap=colormap,nb_steps=50, weight=p['line_width'], opacity=p['line_opacity']).add_to(pths)
+                folium.ColorLine(points,data_val, colormap=colormap,nb_steps=50, weight=p['line_width'],
+                                 opacity=p['line_opacity']).add_to(pths)
 
-                folium.PolyLine(points,color='black', weight=p['line_width'],opacity=0.0,popup = "Path - {} to {}\n{} = {:.3f} {}".format(start_wpt,end_wpt,p['data_name'],max_val,p['unit'])).add_to(pths)
+                folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
+                                popup = "Path - {} to {}\n{} = {:.3f} {}".format(start_wpt,end_wpt,p['data_name'],
+                                                                                 path_max,p['unit'])).add_to(pths)
 
             else:
-                folium.PolyLine(points,color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
+                folium.PolyLine(points, color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],
+                                popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
 
 
             if p['path_points']:
