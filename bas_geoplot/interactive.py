@@ -539,7 +539,7 @@ class Map:
 
 
 
-        dataframe_pandas = pd.DataFrame(mesh)
+        dataframe_pandas = copy.copy(pd.DataFrame(mesh))
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
 
