@@ -86,6 +86,7 @@ def plot_mesh_cli():
         waypoints = pd.DataFrame(info['waypoints'])
         mp.Points(waypoints,'Waypoints',names={"font_size":10.0})
     mp.MeshInfo(mesh,'Mesh Info',show=False)
+    mp.fit_to_layers()
     logging.info('Saving plot to {}'.format(args.output))
     mp.save(args.output)
 

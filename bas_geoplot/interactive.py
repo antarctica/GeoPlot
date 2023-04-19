@@ -249,6 +249,12 @@ class Map:
             fp.write(html)
             fp.close()
 
+    def fit_to_layers(self):
+        """
+            Change zoom level to match plotted data
+        """
+        self.map.fit_bounds(self.map.get_bounds())
+
 
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
         """
