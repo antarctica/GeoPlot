@@ -15,6 +15,7 @@ from shapely.geometry import Polygon
 import geopandas as gpd
 from jinja2 import Template
 from pyproj import Geod
+import logging
 
 
 
@@ -249,6 +250,20 @@ class Map:
             fp.write(html)
             fp.close()
 
+    def fit_to_bounds(self, bounds=None):
+        """
+            Change zoom level to match plotted data
+        """
+        # Use input bounds if provided
+        if bounds:
+            self.map.fit_bounds(bounds)
+        # Otherwise try to retrieve bounds automatically from map
+        else:
+            bounds = self.map.get_bounds()
+            if bounds == [[None, None], [None, None]]:
+                logging.info("No bounds returned, can't fit to layers")
+            else:
+                self.map.fit_bounds(bounds)
 
     def Paths(self,geojson,name,show=True,predefined=None,**kwargs):
         """

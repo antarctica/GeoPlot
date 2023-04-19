@@ -29,9 +29,12 @@ def plot_mesh_cli():
     logging.info("{} {}".format(inspect.stack()[0][3][:-4], version))
     info = json.load(args.mesh)
     mesh = pd.DataFrame(info['cellboxes'])
+    region = info['config']['Mesh_info']['Region']
 
     output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
-    output = '{} | Start Date: {}, End Date: {}'.format(output, info['config']['Mesh_info']['Region']['startTime'], info['config']['Mesh_info']['Region']['endTime'])
+    output = '{} | Start Date: {}, End Date: {}'.format(output, region['startTime'], region['endTime'])
+
+    mesh_bounds = [[region["latMin"], region["longMin"]], [region["latMax"], region["longMax"]]]
 
 
     if args.offline_filepath != '':
@@ -86,6 +89,7 @@ def plot_mesh_cli():
         waypoints = pd.DataFrame(info['waypoints'])
         mp.Points(waypoints,'Waypoints',names={"font_size":10.0})
     mp.MeshInfo(mesh,'Mesh Info',show=False)
+    mp.fit_to_bounds(mesh_bounds)
     logging.info('Saving plot to {}'.format(args.output))
     mp.save(args.output)
 
