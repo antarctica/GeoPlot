@@ -79,6 +79,10 @@ def plot_mesh_cli():
             currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) & (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) & (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) & (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )].reset_index(drop=True)
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
         mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
+    if ('u10' in mesh.columns) and ('v10' in mesh.columns):
+        mesh['mW'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
+        mp.Vectors(mesh, 'Winds', predefined='Winds')
+        logging.debug('plotting winds')
 
     if 'paths' in info.keys():
         logging.debug('plotting paths')
