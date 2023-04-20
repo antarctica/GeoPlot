@@ -18,6 +18,10 @@ def get_args(default_output: str):
     ap.add_argument("-j", "--offline_filepath",default='',help="Location of Offline File Information")
     ap.add_argument("-p", "--plot_sectors",default=False,action="store_true",help="Plot array values as separate polygons")
     ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
+
+    ap.add_argument('--version', action='version',
+                    version='%(prog)s {version}'.format(version=version))
+
     return ap.parse_args()
 
 @timed_call
@@ -75,6 +79,10 @@ def plot_mesh_cli():
             currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) & (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) & (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) & (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )].reset_index(drop=True)
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
         mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
+    if ('u10' in mesh.columns) and ('v10' in mesh.columns):
+        mesh['mW'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
+        mp.Vectors(mesh, 'Winds', predefined='Winds')
+        logging.debug('plotting winds')
 
     if 'paths' in info.keys():
         logging.debug('plotting paths')

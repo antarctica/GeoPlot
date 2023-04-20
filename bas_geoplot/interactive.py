@@ -515,7 +515,8 @@ class Map:
         p = paramsObject('Vectors',predefined=predefined,**kwargs)
 
         Vectors = mesh
-        Vectors = Vectors[(Vectors[p['V']]!=0.0)&(Vectors[p['U']]!=0.0)].reset_index(drop=True)
+        # Filter out empty vectors but allow single component vectors
+        Vectors = Vectors[(Vectors[p['V']]!=0.0)|(Vectors[p['U']]!=0.0)].reset_index(drop=True)
         Vectors = Vectors.dropna(subset=[p['U'], p['V']]).reset_index(drop=True)
 
         if 'land' in Vectors.keys():
