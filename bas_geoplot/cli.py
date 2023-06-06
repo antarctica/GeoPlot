@@ -18,9 +18,9 @@ def get_args(default_output: str):
     ap.add_argument("-j", "--offline_filepath",default='',help="Location of Offline File Information")
     ap.add_argument("-p", "--plot_sectors",default=False,action="store_true",help="Plot array values as separate polygons")
     ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
-
     ap.add_argument('--version', action='version',
                     version='%(prog)s {version}'.format(version=version))
+    ap.add_argument("-t", "--rm_titlebar",default=False, action="store_true", help="Remove titlebar from html")
 
     return ap.parse_args()
 
@@ -35,8 +35,11 @@ def plot_mesh_cli():
     mesh = pd.DataFrame(info['cellboxes'])
     region = info['config']['Mesh_info']['Region']
 
-    output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
-    output = '{} | Start Date: {}, End Date: {}'.format(output, region['startTime'], region['endTime'])
+    if args.rm_titlebar:
+        output = None
+    else:
+        output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
+        output = '{} | Start Date: {}, End Date: {}'.format(output, region['startTime'], region['endTime'])
 
     mesh_bounds = [[region["latMin"], region["longMin"]], [region["latMax"], region["longMax"]]]
 

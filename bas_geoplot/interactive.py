@@ -190,7 +190,7 @@ class Map:
                     }, name="geojson").add_to(bsmap)
             bsmap.add_to(self.map)
 
-        if p['plot_title']:
+        if (p['plot_title']) and (p['title'] is not None):
             self.map.get_root().html.add_child(folium.Element(title_html))
 
 
