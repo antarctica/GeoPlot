@@ -337,10 +337,29 @@ class Map:
                 folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
                                 popup = "Path - {} to {}\n{} = {:.3f} {}".format(start_wpt,end_wpt,p['data_name'],
                                                                                  path_max,p['unit'])).add_to(pths)
+                # Every 10 segments, draw a triangle as an arrow head
+                for idx in range(1, len(points), 10):
+                    lon_diff = points[idx, 0] - points[idx-1, 0]
+                    lat_diff = points[idx, 1] - points[idx-1, 1]
+                    loc = [points[idx,0],points[idx,1]]
+                    heading = -np.degrees(np.arctan2(lon_diff, lat_diff))
+                    folium.RegularPolygonMarker(location=loc, rotation=heading,
+                                                color=colormap(data_val[idx]), fill=True, 
+                                                number_of_sides=3, radius=10).add_to(pths)
 
             else:
                 folium.PolyLine(points, color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],
                                 popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
+                
+                # Every 10 segments, draw a triangle as an arrow head
+                for idx in range(1, len(points), 10):
+                    lon_diff = points[idx, 0] - points[idx-1, 0]
+                    lat_diff = points[idx, 1] - points[idx-1, 1]
+                    loc = [points[idx,0],points[idx,1]]
+                    heading = -np.degrees(np.arctan2(lon_diff, lat_diff))
+                    folium.RegularPolygonMarker(location=loc, rotation=heading,
+                                                color=p['line_color'], fill=True 
+                                                number_of_sides=3, radius=10).add_to(pths)
 
 
             if p['path_points']:
@@ -355,6 +374,7 @@ class Map:
                                                     text_color='black',
                                                     inner_icon_style='margin:0px;font-size:0.8em')
                     ).add_to(pths)
+
         
         if type(p['line_color']) is dict:
             self.map.add_child(colormap)
