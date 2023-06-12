@@ -48,53 +48,57 @@ def plot_mesh_cli():
 
 
     if args.offline_filepath != '':
-        logging.debug("offline .js & .css datastore - {}".format(args.offline_filepath))
+        logging.debug("Offline .js & .css datastore - {}".format(args.offline_filepath))
         if args.coastlines != '':
-            mp = Map(title=output,offline_coastlines=args.coastlines,offline_filepath=args.offline_filepath)
+            mp = Map(title=output, offline_coastlines=args.coastlines, offline_filepath=args.offline_filepath)
         else:
-            mp = Map(title=output,offline_filepath=args.offline_filepath)
+            mp = Map(title=output, offline_filepath=args.offline_filepath)
     else:
         if args.coastlines != '':
-            mp = Map(title=output,offline_coastlines=args.coastlines)
+            mp = Map(title=output, offline_coastlines=args.coastlines)
         else:
             mp = Map(title=output)
 
 
     if 'SIC' in mesh.columns:
-        logging.debug("plotting Sea Ice Concentration")
-        mp.Maps(mesh,'SIC',predefined='SIC')
+        logging.debug("Plotting Sea Ice Concentration")
+        mp.Maps(mesh, 'SIC', predefined='SIC')
     if 'ext_ice' in mesh.columns:
-        logging.debug("plotting Extreme Ice areas")
-        mp.Maps(mesh,'Extreme Ice',predefined='Extreme Sea Ice Conc')
+        logging.debug("Plotting Extreme Ice areas")
+        mp.Maps(mesh, 'Extreme Ice', predefined='Extreme Sea Ice Conc')
     if 'land' in mesh.columns:
-        logging.debug("plotting Land Mask")
-        mp.Maps(mesh,'Land Mask',predefined='Land Mask')
+        logging.debug("Plotting Land Mask")
+        mp.Maps(mesh, 'Land Mask', predefined='Land Mask')
     if 'shallow' in mesh.columns:
-        logging.debug("plotting shallow areas")
+        logging.debug("Plotting shallow areas")
         mp.Maps(mesh, 'Shallows', predefined='Shallows')
     if 'fuel' in mesh.columns:
-        logging.debug('plotting Fuel usage per day and tCO2e')
-        mp.Maps(mesh,'Fuel',predefined='Fuel (Tonnes/Day)',show=False,plot_sectors=args.plot_sectors)
-        mp.Maps(mesh,'tCO2e',predefined='tCO2e',show=False,plot_sectors=args.plot_sectors)
+        logging.debug('Plotting Fuel usage per day and tCO2e')
+        mp.Maps(mesh, 'Fuel', predefined='Fuel (Tonnes/Day)', show=False, plot_sectors=args.plot_sectors)
+        mp.Maps(mesh, 'tCO2e', predefined='tCO2e', show=False, plot_sectors=args.plot_sectors)
     if 'speed' in mesh.columns:
-        logging.debug('plotting vessel maximum speed')
-        mp.Maps(mesh,'Max Speed',predefined='Max Speed (knots)',show=False,plot_sectors=args.plot_sectors)
+        logging.debug('Plotting vessel maximum speed')
+        mp.Maps(mesh, 'Max Speed', predefined='Max Speed (knots)', show=False,plot_sectors=args.plot_sectors)
     if ('uC' in mesh.columns) and ('vC' in mesh.columns):
         mesh['mC'] = np.sqrt(mesh['uC']**2 + mesh['vC']**2)
-        logging.debug('plotting currents')
+        logging.debug('Plotting currents')
         if args.currents_paths != '':
-            logging.debug('plotting currents from file')
+            logging.debug('Plotting currents from file')
             currents = pd.read_csv(args.currents_paths)
-            currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) & (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) & (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) & (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )].reset_index(drop=True)
+            currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) &
+                                (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) &
+                                (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) &
+                                (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )
+            ].reset_index(drop=True)
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
         mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
     if ('u10' in mesh.columns) and ('v10' in mesh.columns):
         mesh['mW'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
         mp.Vectors(mesh, 'Winds', predefined='Winds')
-        logging.debug('plotting winds')
+        logging.debug('Plotting winds')
 
     if 'paths' in info.keys():
-        logging.debug('plotting paths')
+        logging.debug('Plotting paths')
         paths = info['paths']
         mp.Paths(paths,'Routes - Traveltime',predefined='Traveltime (Days)')
         mp.Paths(paths,'Routes - Distance',predefined='Distance (Nautical miles)',show=False)
@@ -102,16 +106,17 @@ def plot_mesh_cli():
         mp.Paths(paths,'Routes - Fuel',predefined='Fuel',show=False)
         mp.Paths(paths,'Routes - tCO2e',predefined='tCO2e',show=False)
     if 'waypoints' in info.keys():
-        logging.debug('plotting waypoints')
+        logging.debug('Plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])
         mp.Points(waypoints,'Waypoints',names={"font_size":10.0})
     if args.route:
-        logging.debug('plotting user defined route')
+        logging.debug('Plotting user defined route')
         with open(args.route, "r") as f:
             route_json = json.load(f)
-        mp.Paths(route_json, 'User Route - Traveltime',predefined='Traveltime (Days)')
+        mp.Paths(route_json, 'User Route - Traveltime', predefined='Traveltime (Days)')
         mp.Paths(route_json, 'User Route - Fuel', predefined='Fuel', show=False)
-    mp.MeshInfo(mesh,'Mesh Info',show=False)
+
+    mp.MeshInfo(mesh, 'Mesh Info', show=False)
     mp.fit_to_bounds(mesh_bounds)
     logging.info('Saving plot to {}'.format(args.output))
     mp.save(args.output)
