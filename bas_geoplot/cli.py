@@ -12,12 +12,16 @@ from bas_geoplot.interactive import Map
 
 @setup_logging
 def get_args(default_output: str):
+    """
+        Add required command line arguments for all CLI entry points.
+    """
+
     ap = argparse.ArgumentParser()
     ap.add_argument("-o", "--output", default=default_output, help="Output file")
     ap.add_argument("-v", "--verbose", default=False, action="store_true", help="Turn on DEBUG level logging")
     ap.add_argument("-s", "--static", default=False, action="store_true", help="Save the plot as a static .PNG")
     ap.add_argument("-c", "--currents_paths", default='', help="Path to currents file")
-    ap.add_argument("-l", "--coastlines", default='',help="Loading Offline Coastlines")
+    ap.add_argument("-l", "--coastlines", default='', help="Loading Offline Coastlines")
     ap.add_argument("-j", "--offline_filepath", default='', help="Location of Offline File Information")
     ap.add_argument("-p", "--plot_sectors", default=False, action="store_true",
                     help="Plot array values as separate polygons")
@@ -31,22 +35,28 @@ def get_args(default_output: str):
 
 @timed_call
 def plot_mesh_cli():
+    """
+        CLI entry point to plot an environmental mesh and associated routes/waypoints
+    """
 
+    # Set output location and load mesh info
     args = get_args("interactive_plot.html")
     logging.info("{} {}".format(inspect.stack()[0][3][:-4], version))
     info = json.load(args.mesh)
     mesh = pd.DataFrame(info['cellboxes'])
     region = info['config']['Mesh_info']['Region']
 
+    # Set-up title bar
     if args.rm_titlebar:
         output = None
     else:
         output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
         output = '{} | Start Date: {}, End Date: {}'.format(output, region['startTime'], region['endTime'])
 
+    # Put mesh bounds in format required by fit_to_bounds
     mesh_bounds = [[region["latMin"], region["longMin"]], [region["latMax"], region["longMax"]]]
 
-
+    # Initialise Map object
     if args.offline_filepath != '':
         logging.debug("Offline .js & .css datastore - {}".format(args.offline_filepath))
         if args.coastlines != '':
@@ -59,7 +69,7 @@ def plot_mesh_cli():
         else:
             mp = Map(title=output)
 
-
+    # Plot maps of mesh info
     if 'SIC' in mesh.columns:
         logging.debug("Plotting Sea Ice Concentration")
         mp.Maps(mesh, 'SIC', predefined='SIC')
@@ -97,18 +107,19 @@ def plot_mesh_cli():
         mp.Vectors(mesh, 'Winds', predefined='Winds')
         logging.debug('Plotting winds')
 
+    # Plot routes and waypoints
     if 'paths' in info.keys():
         logging.debug('Plotting paths')
         paths = info['paths']
-        mp.Paths(paths,'Routes - Traveltime',predefined='Traveltime (Days)')
-        mp.Paths(paths,'Routes - Distance',predefined='Distance (Nautical miles)',show=False)
-        mp.Paths(paths,'Routes - Max Speed',predefined='Max Speed (knots)',show=False)
-        mp.Paths(paths,'Routes - Fuel',predefined='Fuel',show=False)
-        mp.Paths(paths,'Routes - tCO2e',predefined='tCO2e',show=False)
+        mp.Paths(paths, 'Routes - Traveltime', predefined='Traveltime (Days)')
+        mp.Paths(paths, 'Routes - Distance', predefined='Distance (Nautical miles)', show=False)
+        mp.Paths(paths, 'Routes - Max Speed', predefined='Max Speed (knots)', show=False)
+        mp.Paths(paths, 'Routes - Fuel', predefined='Fuel', show=False)
+        mp.Paths(paths, 'Routes - tCO2e', predefined='tCO2e', show=False)
     if 'waypoints' in info.keys():
         logging.debug('Plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])
-        mp.Points(waypoints,'Waypoints',names={"font_size":10.0})
+        mp.Points(waypoints, 'Waypoints', names={"font_size":10.0})
     if args.route:
         logging.debug('Plotting user defined route')
         with open(args.route, "r") as f:
@@ -116,6 +127,7 @@ def plot_mesh_cli():
         mp.Paths(route_json, 'User Route - Traveltime', predefined='Traveltime (Days)')
         mp.Paths(route_json, 'User Route - Fuel', predefined='Fuel', show=False)
 
+    # Set-up mesh info and save map to html file
     mp.MeshInfo(mesh, 'Mesh Info', show=False)
     mp.fit_to_bounds(mesh_bounds)
     logging.info('Saving plot to {}'.format(args.output))
