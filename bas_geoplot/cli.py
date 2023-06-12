@@ -33,6 +33,7 @@ def get_args(default_output: str):
 
     return ap.parse_args()
 
+
 @timed_call
 def plot_mesh_cli():
     """
