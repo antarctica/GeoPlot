@@ -3,9 +3,12 @@ import json
 import inspect
 import logging
 import numpy as np
+import pandas as pd
 
 from bas_geoplot import __version__ as version
 from bas_geoplot.utils import setup_logging, timed_call
+from bas_geoplot.interactive import Map
+
 
 @setup_logging
 def get_args(default_output: str):
@@ -16,7 +19,8 @@ def get_args(default_output: str):
     ap.add_argument("-c", "--currents_paths",default='',help="Path to currents file")
     ap.add_argument("-l", "--coastlines",default='',help="Loading Offline Coastlines")
     ap.add_argument("-j", "--offline_filepath",default='',help="Location of Offline File Information")
-    ap.add_argument("-p", "--plot_sectors",default=False,action="store_true",help="Plot array values as separate polygons")
+    ap.add_argument("-p", "--plot_sectors",default=False,action="store_true",
+                    help="Plot array values as separate polygons")
     ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
     ap.add_argument('--version', action='version',
                     version='%(prog)s {version}'.format(version=version))
@@ -26,8 +30,6 @@ def get_args(default_output: str):
 
 @timed_call
 def plot_mesh_cli():
-    from bas_geoplot.interactive import Map
-    import pandas as pd
 
     args = get_args("interactive_plot.html")
     logging.info("{} {}".format(inspect.stack()[0][3][:-4], version))
@@ -66,6 +68,9 @@ def plot_mesh_cli():
     if 'land' in mesh.columns:
         logging.debug("plotting Land Mask")
         mp.Maps(mesh,'Land Mask',predefined='Land Mask')
+    if 'shallow' in mesh.columns:
+        logging.debug("plotting shallow areas")
+        mp.Maps(mesh, 'Shallows', predefined='Shallows')
     if 'fuel' in mesh.columns:
         logging.debug('plotting Fuel usage per day and tCO2e')
         mp.Maps(mesh,'Fuel',predefined='Fuel (Tonnes/Day)',show=False,plot_sectors=args.plot_sectors)

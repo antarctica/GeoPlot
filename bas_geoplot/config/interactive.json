@@ -12,7 +12,7 @@
         "path_points":false,
         "data_name":null,
         "unit":"",
-        "scaling_factor":1.0,        
+        "scaling_factor":1.0,
         "Traveltime (Days)":{
             "line_color":{
                 "color":"viridis"
@@ -182,6 +182,12 @@
             "data_name":"land",
             "line_width":0.05
         },
+        "Shallows":{
+            "fill_opacity":0.6,
+            "data_name":"shallow",
+            "fill_color":"blue",
+            "line_width":0.05
+        },
         "Mesh Grid Outline":
         {
             "fill_color":"white"
@@ -191,8 +197,8 @@
         "color":"black",
         "marker_size":1.0,
         "line_width":0.1,
-        "names": null,      
-        "icon":"circle",  
+        "names": null,
+        "icon":"circle",
 
         "Waypoints":{
             "names":{
@@ -200,7 +206,7 @@
             },
             "icon":"circle"
         }
-        
+
     },
     "Vectors":{
         "color": "blue",
