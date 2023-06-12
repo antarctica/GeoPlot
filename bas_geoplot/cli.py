@@ -13,18 +13,19 @@ from bas_geoplot.interactive import Map
 @setup_logging
 def get_args(default_output: str):
     ap = argparse.ArgumentParser()
-    ap.add_argument("-o", "--output",default=default_output,help="Output file")
-    ap.add_argument("-v", "--verbose",default=False,action="store_true",help="Turn on DEBUG level logging")
-    ap.add_argument("-s", "--static",default=False,action="store_true",help="Save the plot as a static .PNG")           
-    ap.add_argument("-c", "--currents_paths",default='',help="Path to currents file")
-    ap.add_argument("-l", "--coastlines",default='',help="Loading Offline Coastlines")
-    ap.add_argument("-j", "--offline_filepath",default='',help="Location of Offline File Information")
-    ap.add_argument("-p", "--plot_sectors",default=False,action="store_true",
+    ap.add_argument("-o", "--output", default=default_output, help="Output file")
+    ap.add_argument("-v", "--verbose", default=False, action="store_true", help="Turn on DEBUG level logging")
+    ap.add_argument("-s", "--static", default=False, action="store_true", help="Save the plot as a static .PNG")
+    ap.add_argument("-c", "--currents_paths", default='', help="Path to currents file")
+    ap.add_argument("-l", "--coastlines", default='',help="Loading Offline Coastlines")
+    ap.add_argument("-j", "--offline_filepath", default='', help="Location of Offline File Information")
+    ap.add_argument("-p", "--plot_sectors", default=False, action="store_true",
                     help="Plot array values as separate polygons")
-    ap.add_argument("mesh", type=argparse.FileType('r'),help="file location of mesh to be plot")
+    ap.add_argument("mesh", type=argparse.FileType('r'), help="file location of mesh to be plot")
     ap.add_argument('--version', action='version',
                     version='%(prog)s {version}'.format(version=version))
-    ap.add_argument("-t", "--rm_titlebar",default=False, action="store_true", help="Remove titlebar from html")
+    ap.add_argument("-t", "--rm_titlebar", default=False, action="store_true", help="Remove titlebar from html")
+    ap.add_argument("-r", "--route", default=None, help="Plot additional route on mesh")
 
     return ap.parse_args()
 
@@ -95,7 +96,7 @@ def plot_mesh_cli():
     if 'paths' in info.keys():
         logging.debug('plotting paths')
         paths = info['paths']
-        mp.Paths(paths,'Routes - Traveltimes',predefined='Traveltime (Days)')
+        mp.Paths(paths,'Routes - Traveltime',predefined='Traveltime (Days)')
         mp.Paths(paths,'Routes - Distance',predefined='Distance (Nautical miles)',show=False)
         mp.Paths(paths,'Routes - Max Speed',predefined='Max Speed (knots)',show=False)
         mp.Paths(paths,'Routes - Fuel',predefined='Fuel',show=False)
@@ -104,6 +105,12 @@ def plot_mesh_cli():
         logging.debug('plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])
         mp.Points(waypoints,'Waypoints',names={"font_size":10.0})
+    if args.route:
+        logging.debug('plotting user defined route')
+        with open(args.route, "r") as f:
+            route_json = json.load(f)
+        mp.Paths(route_json, 'User Route - Traveltime',predefined='Traveltime (Days)')
+        mp.Paths(route_json, 'User Route - Fuel', predefined='Fuel', show=False)
     mp.MeshInfo(mesh,'Mesh Info',show=False)
     mp.fit_to_bounds(mesh_bounds)
     logging.info('Saving plot to {}'.format(args.output))
