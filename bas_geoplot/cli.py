@@ -132,7 +132,3 @@ def plot_mesh_cli():
     mp.fit_to_bounds(mesh_bounds)
     logging.info('Saving plot to {}'.format(args.output))
     mp.save(args.output)
-
-
-
-
