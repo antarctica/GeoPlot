@@ -2,25 +2,24 @@ import folium
 import os
 import json
 import copy
+import logging
 import pandas as pd
-
 import numpy as np
+import geopandas as gpd
+
 from folium import plugins
 from folium.plugins import TimestampedGeoJson
-
 from branca.colormap import linear
 from branca.element import MacroElement
 from shapely import wkt
 from shapely.geometry import Polygon
-import geopandas as gpd
 from jinja2 import Template
 from pyproj import Geod
-import logging
+
+from bas_geoplot.utils import convert_decimal_days
 
 
-
-
-def paramsObject(layer,predefined=None,**kwargs):
+def params_object(layer, predefined=None, **kwargs):
     # Loading config of standards
     p_file = os.path.join(os.path.dirname(__file__),'config','interactive.json')
     with open(p_file, 'r') as f:
@@ -39,6 +38,9 @@ def paramsObject(layer,predefined=None,**kwargs):
 
 
 def build_sectors(cell_poly, dcx, dcy, cx, cy):
+    """
+        Split a rectangular polygon into 8 triangular sectors corresponding to the 8 angular ranges used for array data
+    """
 
     coords = list(cell_poly.exterior.coords)
     x_gap = dcx - (np.sqrt(2) - 1) * dcy
@@ -73,6 +75,10 @@ def build_sectors(cell_poly, dcx, dcy, cx, cy):
 
 
 def sectorise_df(df,dn):
+    """
+        Split all cells in mesh into 8 sectors corresponding to the 8 angular ranges used for array data and assign the
+        correct values to each sector
+    """
 
     sec_df = pd.DataFrame(columns=[dn,'geometry'])
 
@@ -139,15 +145,13 @@ class Map:
         # === Initialising layer info
         self._layer_info = {}
 
-
         # ==== Loading standard configs
-        p = paramsObject('Basemap',predefined=predefined,**kwargs)
+        p = params_object('Basemap', predefined=predefined, **kwargs)
 
         if p['title']:
             title='{} &ensp;|&ensp;'.format(p['title'])
         else:
             title=''
-
 
         title_html = '''
             <h1 style="color:#003b5c;font-size:16px">
@@ -155,8 +159,7 @@ class Map:
             &ensp; |&ensp; {}
             </h1>
             </body>
-            '''.format(title)   
-
+            '''.format(title)
 
         if 'map_centre' in p.keys():
             map_centre = p['map_centre']
@@ -167,8 +170,6 @@ class Map:
             self.map = folium.Map(location=map_centre,zoom_start=p['zoom_start'],tiles=None,width=p['size'][0],height=p['size'][1])
         else:
             self.map = folium.Map(location=map_centre,zoom_start=p['zoom_start'],tiles=None)
-        
-        
 
         if p['offline_filepath']:
             self._offline_mode = True
@@ -192,7 +193,6 @@ class Map:
 
         if (p['plot_title']) and (p['title'] is not None):
             self.map.get_root().html.add_child(folium.Element(title_html))
-
 
     def _layer(self,name,show=False):
         if name not in self._layer_info:
@@ -222,7 +222,6 @@ class Map:
         """
         map = self.show()
 
-
         html = map.get_root().render()
         if self._offline_mode:
             html = html.replace('https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js',f'{os.path.join(self._offline_mode_path, "leaflet.js")}')
@@ -244,8 +243,6 @@ class Map:
             html = html.replace('https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.js',f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.js")}')
             html = html.replace("https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.css",f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.css")}')
 
-            
-            
         with open(file,'w') as fp:
             fp.write(html)
             fp.close()
@@ -277,12 +274,12 @@ class Map:
                 predefined (opt=None, string) - Predefined plotting formats given in
                     config/interactive.json of the package files
         """
-        p = paramsObject('Paths',predefined=predefined,**kwargs)
+
+        p = params_object('Paths', predefined=predefined, **kwargs)
 
         # Defining the feature groups to add
         pths = self._layer(name,show=show)
         paths = geojson['features']
-
 
         no_path_name = True
         for path in copy.deepcopy(paths):
@@ -290,7 +287,6 @@ class Map:
                 no_path_name = False
         if no_path_name:
             return
-
 
         # Determining min-max values of all paths if colormap being used
         if type(p['line_color']) is dict:
@@ -330,18 +326,25 @@ class Map:
                     max_val = p["line_color"]['cmax']
 
                 colormap = linear._colormaps[p["line_color"]['color']].scale(min_val,max_val)
-                colormap.caption = '{} ({},Max Value={:.3f})'.format(name,p['unit'],max_val)
+                if p['unit'] == 'Days':
+                    colormap.caption = '{} ({}, Max Value= {})'.format(name, p['unit'], convert_decimal_days(max_val))
+                else:
+                    colormap.caption = '{} ({}, Max Value= {:.3f})'.format(name,p['unit'],max_val)
                 folium.ColorLine(points,data_val, colormap=colormap,nb_steps=50, weight=p['line_width'],
                                  opacity=p['line_opacity']).add_to(pths)
-
-                folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
-                                popup = "Path - {} to {}\n{} = {:.3f} {}".format(start_wpt,end_wpt,p['data_name'],
-                                                                                 path_max,p['unit'])).add_to(pths)
+                if p['unit'] == 'Days':
+                    folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
+                                    popup = "Path - {} to {}\n{} = {}".format(start_wpt, end_wpt, p['data_name'],
+                                                                              convert_decimal_days(path_max))
+                                    ).add_to(pths)
+                else:
+                    folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
+                                    popup="Path - {} to {}\n{} = {:.3f} {}".format(start_wpt, end_wpt, p['data_name'],
+                                                                                   path_max, p['unit'])).add_to(pths)
 
             else:
                 folium.PolyLine(points, color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],
                                 popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
-
 
             if p['path_points']:
                 for idx in range(len(points)):
@@ -360,7 +363,6 @@ class Map:
             self.map.add_child(colormap)
             self.map.add_child(BindColormap(pths,colormap))
 
-
     def Points(self,dataframe_points,name,show=True,predefined=None,**kwargs):
         """
             Overlays small collection of Points, such as waypoints and sites of interest.
@@ -373,7 +375,7 @@ class Map:
                     config/interactive.json of the package files
         """
 
-        p = paramsObject('Points',predefined=predefined,**kwargs)
+        p = params_object('Points', predefined=predefined, **kwargs)
 
         wpts      = self._layer(name,show=show)
  
@@ -403,7 +405,6 @@ class Map:
 
         wpts.add_to(self.map)
 
-
     def Maps(self,dataframe_pandas,name,show=True,predefined=None,plot_sectors=False,**kwargs):
         """
             Overlays a layer of scalars or booleans such as sea ice concentration or land.
@@ -417,7 +418,7 @@ class Map:
                     package files
                 plot_sectors (boolean): Display sectorised list values as eight individual polygons
         """
-        p = paramsObject('Maps',predefined=predefined,**kwargs)
+        p = params_object('Maps', predefined=predefined, **kwargs)
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
@@ -436,7 +437,6 @@ class Map:
 
         feature_info = self._layer(name,show=show)
 
-
         if p['data_name']:
             try:
                 if 'scaling_factor' in p.keys():
@@ -446,14 +446,10 @@ class Map:
             except:
                 raise print('Data name not in variables')
 
-
-
         if p['data_name'] and p['trim_min']:
             dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']] > p['trim_min']]
         if p['data_name'] and p['trim_max']:
             dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']] < p['trim_max']]
-            
-
 
         if (type(p['fill_color']) is dict) and (p['data_name']):
             dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']].notna() & ~np.isinf(abs(dataframe_geo[p['data_name']]))]
@@ -497,8 +493,6 @@ class Map:
                         }
                 ).add_to(feature_info)
 
-
-
     def Vectors(self,mesh,name,show=True,predefined=None,**kwargs):
         """
             Overlays a layer of vectors such as currents.
@@ -511,8 +505,7 @@ class Map:
                     config/interactive.json of the package files
         """
 
-
-        p = paramsObject('Vectors',predefined=predefined,**kwargs)
+        p = params_object('Vectors', predefined=predefined, **kwargs)
 
         Vectors = mesh
         # Filter out empty vectors but allow single component vectors
@@ -537,8 +530,6 @@ class Map:
                 folium.RegularPolygonMarker(location=pair[0], color=p['color'], fill=True, fill_color=p['color'], fill_opacity=1,
                                             number_of_sides=3, rotation=rot,radius=4,weight=p['line_width']).add_to(vcts)
 
-
-
     def MeshInfo(self,mesh,name,predefined='PolarRoute',show=True,**kwargs):
         """
             Overlays a layer that gives information on all polygon boxes.
@@ -551,9 +542,7 @@ class Map:
                     config/interactive.json of the package files
         """
 
-        p = paramsObject('MeshInfo',predefined=predefined,**kwargs)
-
-
+        p = params_object('MeshInfo', predefined=predefined, **kwargs)
 
         dataframe_pandas = copy.copy(pd.DataFrame(mesh))
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
@@ -561,8 +550,7 @@ class Map:
 
         p = p['fields']
 
-        column_names = []
-        column_names.append('geometry')
+        column_names = ['geometry']
         for col_info in p:
             try:
                 column_name = col_info['Name']
@@ -613,9 +601,6 @@ class Map:
         self.map.add_child(colormap)
         self.map.add_child(BindColormap(feature_info,colormap))
 
-
-
-
     def _Geotiff(self,path,name,show=True):
         import rasterio
         src = rasterio.open(path)
@@ -655,11 +640,8 @@ class Map:
                 trying=False
             indx+=1
 
-
-
-
     def _TimeData(self,geojson,predefined=None,**kwargs):
-        p = paramsObject('TimeData',predefined=predefined,**kwargs)
+        p = params_object('TimeData', predefined=predefined, **kwargs)
 
         for ii in range(len(geojson['features'])):
             geojson['features'][ii]['properties']['style'] = {}
@@ -681,10 +663,6 @@ class Map:
             add_last_point=p['point']
         ).add_to(self.map)
     
-
-
-
-
 
 # def TimeMapSDA(PATH,map):
 #     #'/Users/jsmith/Documents/Research/Researcher_BAS/RoutePlanning/SDADT-Positions'
