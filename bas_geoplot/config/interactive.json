@@ -39,7 +39,7 @@
             "line_color":{
                 "color":"Dark2_03"
             },
-            "data_name":"fuel",
+            "data_name":"battery",
             "unit":"Ah/Day"
         },
         "tCO2e":{
@@ -153,7 +153,7 @@
                 "colormap":"YlOrRd_04"
             },
             "fill_opacity":0.6,
-            "data_name":"fuel",
+            "data_name":"battery",
             "units":"Ah/Day"
         },
         "tCO2e":{
