@@ -327,9 +327,9 @@ class Map:
 
                 colormap = linear._colormaps[p["line_color"]['color']].scale(min_val,max_val)
                 if p['unit'] == 'Days':
-                    colormap.caption = '{} ({}, Max Value= {})'.format(name, p['unit'], convert_decimal_days(max_val))
+                    colormap.caption = '{} ({}, Max Value: {})'.format(name, p['unit'], convert_decimal_days(max_val))
                 else:
-                    colormap.caption = '{} ({}, Max Value= {:.3f})'.format(name,p['unit'],max_val)
+                    colormap.caption = '{} ({}, Max Value: {:.3f})'.format(name,p['unit'],max_val)
                 folium.ColorLine(points,data_val, colormap=colormap,nb_steps=50, weight=p['line_width'],
                                  opacity=p['line_opacity']).add_to(pths)
                 if p['unit'] == 'Days':

@@ -87,6 +87,9 @@ def plot_mesh_cli():
         logging.debug('Plotting Fuel usage per day and tCO2e')
         mp.Maps(mesh, 'Fuel', predefined='Fuel (Tonnes/Day)', show=False, plot_sectors=args.plot_sectors)
         mp.Maps(mesh, 'tCO2e', predefined='tCO2e', show=False, plot_sectors=args.plot_sectors)
+    if 'battery' in mesh.columns:
+        logging.debug('Plotting battery usage')
+        mp.Maps(mesh, 'Battery Usage', predefined='Battery Usage', show=False, plot_sectors=args.plot_sectors)
     if 'speed' in mesh.columns:
         logging.debug('Plotting vessel maximum speed')
         mp.Maps(mesh, 'Max Speed', predefined='Max Speed (knots)', show=False,plot_sectors=args.plot_sectors)
@@ -115,8 +118,11 @@ def plot_mesh_cli():
         mp.Paths(paths, 'Routes - Traveltime', predefined='Traveltime (Days)')
         mp.Paths(paths, 'Routes - Distance', predefined='Distance (Nautical miles)', show=False)
         mp.Paths(paths, 'Routes - Max Speed', predefined='Max Speed (knots)', show=False)
-        mp.Paths(paths, 'Routes - Fuel', predefined='Fuel', show=False)
-        mp.Paths(paths, 'Routes - tCO2e', predefined='tCO2e', show=False)
+        if 'fuel' in mesh.columns:
+            mp.Paths(paths, 'Routes - Fuel', predefined='Fuel', show=False)
+            mp.Paths(paths, 'Routes - tCO2e', predefined='tCO2e', show=False)
+        if 'battery' in mesh.columns:
+            mp.Paths(paths, 'Routes - Battery', predefined='Battery', show=False)
     if 'waypoints' in info.keys():
         logging.debug('Plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])

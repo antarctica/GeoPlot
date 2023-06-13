@@ -33,7 +33,14 @@
                 "color":"Dark2_03"
             },
             "data_name":"fuel",
-            "unit":"Tonnes/Day"
+            "unit":"Tonnes"
+        },
+        "Battery":{
+            "line_color":{
+                "color":"Dark2_03"
+            },
+            "data_name":"fuel",
+            "unit":"Ah/Day"
         },
         "tCO2e":{
             "line_color":{
@@ -138,6 +145,16 @@
             "fill_opacity":0.6,
             "data_name":"fuel",
             "units":"Tonnes/Day"
+        },
+        "Battery Usage":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"YlOrRd_04"
+            },
+            "fill_opacity":0.6,
+            "data_name":"fuel",
+            "units":"Ah/Day"
         },
         "tCO2e":{
             "line_color":"gray",
