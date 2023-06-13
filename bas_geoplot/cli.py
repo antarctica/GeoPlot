@@ -30,6 +30,7 @@ def get_args(default_output: str):
                     version='%(prog)s {version}'.format(version=version))
     ap.add_argument("-t", "--rm_titlebar", default=False, action="store_true", help="Remove titlebar from html")
     ap.add_argument("-r", "--route", default=None, help="Plot additional route on mesh")
+    ap.add_argument("a", "--arrows", default=False, action="store_true", help="Add directional arrows to routes")
 
     return ap.parse_args()
 
@@ -115,14 +116,14 @@ def plot_mesh_cli():
     if 'paths' in info.keys():
         logging.debug('Plotting paths')
         paths = info['paths']
-        mp.Paths(paths, 'Routes - Traveltime', predefined='Traveltime (Days)')
-        mp.Paths(paths, 'Routes - Distance', predefined='Distance (Nautical miles)', show=False)
-        mp.Paths(paths, 'Routes - Max Speed', predefined='Max Speed (knots)', show=False)
+        mp.Paths(paths, 'Route - Traveltime', predefined='Traveltime (Days)', arrows=args.arrows)
+        mp.Paths(paths, 'Route - Distance', predefined='Distance (Nautical miles)', show=False, arrows=args.arrows)
+        mp.Paths(paths, 'Route - Max Speed', predefined='Max Speed (knots)', show=False, arrows=args.arrows)
         if 'fuel' in mesh.columns:
-            mp.Paths(paths, 'Routes - Fuel', predefined='Fuel', show=False)
-            mp.Paths(paths, 'Routes - tCO2e', predefined='tCO2e', show=False)
+            mp.Paths(paths, 'Route - Fuel', predefined='Fuel', show=False, arrows=args.arrows)
+            mp.Paths(paths, 'Route - tCO2e', predefined='tCO2e', show=False, arrows=args.arrows)
         if 'battery' in mesh.columns:
-            mp.Paths(paths, 'Routes - Battery', predefined='Battery', show=False)
+            mp.Paths(paths, 'Route - Battery', predefined='Battery', show=False, arrows=args.arrows)
     if 'waypoints' in info.keys():
         logging.debug('Plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])
@@ -131,8 +132,8 @@ def plot_mesh_cli():
         logging.debug('Plotting user defined route')
         with open(args.route, "r") as f:
             route_json = json.load(f)
-        mp.Paths(route_json, 'User Route - Traveltime', predefined='Traveltime (Days)')
-        mp.Paths(route_json, 'User Route - Fuel', predefined='Fuel', show=False)
+        mp.Paths(route_json, 'User Route - Traveltime', predefined='Traveltime (Days)', arrows=args.arrows)
+        mp.Paths(route_json, 'User Route - Fuel', predefined='Fuel', show=False, arrows=args.arrows)
 
     # Set-up mesh info and save map to html file
     mp.MeshInfo(mesh, 'Mesh Info', show=False)
