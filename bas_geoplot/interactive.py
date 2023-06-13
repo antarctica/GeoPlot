@@ -402,7 +402,6 @@ class Map:
                                     ),
                 ).add_to(wpts)
 
-
         wpts.add_to(self.map)
 
     def Maps(self,dataframe_pandas,name,show=True,predefined=None,plot_sectors=False,**kwargs):
@@ -512,8 +511,8 @@ class Map:
         Vectors = Vectors[(Vectors[p['V']]!=0.0)|(Vectors[p['U']]!=0.0)].reset_index(drop=True)
         Vectors = Vectors.dropna(subset=[p['U'], p['V']]).reset_index(drop=True)
 
-        if 'land' in Vectors.keys():
-            Vectors = Vectors[Vectors['land']==False].reset_index(drop=True)
+        if 'inaccessible' in Vectors.keys():
+            Vectors = Vectors[Vectors['inaccessible']==False].reset_index(drop=True)
 
         vcts = self._layer(name,show=show)
         for idx,vec in Vectors.iterrows():
