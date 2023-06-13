@@ -30,7 +30,7 @@ def get_args(default_output: str):
                     version='%(prog)s {version}'.format(version=version))
     ap.add_argument("-t", "--rm_titlebar", default=False, action="store_true", help="Remove titlebar from html")
     ap.add_argument("-r", "--route", default=None, help="Plot additional route on mesh")
-    ap.add_argument("a", "--arrows", default=False, action="store_true", help="Add directional arrows to routes")
+    ap.add_argument("-a", "--arrows", default=False, action="store_true", help="Add directional arrows to routes")
 
     return ap.parse_args()
 
@@ -84,6 +84,9 @@ def plot_mesh_cli():
     if 'shallow' in mesh.columns:
         logging.debug("Plotting shallow areas")
         mp.Maps(mesh, 'Shallows', predefined='Shallows')
+    if 'elevation' in mesh.columns:
+        logging.debug("Plotting elevation")
+        mp.Maps(mesh, 'Elevation', predefined='Elev', show=False)
     if 'fuel' in mesh.columns:
         logging.debug('Plotting Fuel usage per day and tCO2e')
         mp.Maps(mesh, 'Fuel', predefined='Fuel (Tonnes/Day)', show=False, plot_sectors=args.plot_sectors)
