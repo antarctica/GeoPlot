@@ -40,14 +40,14 @@
                 "color":"Dark2_03"
             },
             "data_name":"battery",
-            "unit":"Ah/Day"
+            "unit":"Ah"
         },
         "tCO2e":{
             "line_color":{
                 "color":"Dark2_03"
             },
             "data_name":"fuel",
-            "unit":"tCO2e/Day",
+            "unit":"tCO2e",
             "scaling_factor":3.25
         },
         "Max Speed (km/hr)":{
