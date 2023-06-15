@@ -80,8 +80,35 @@
             "data_name":"distance",
             "unit":"Nautical miles",
             "scaling_factor":0.000539957
+        },
+        "black":{
+            "line_color":"black",
+            "data_name":"traveltime"
+        },
+        "purple":{
+            "line_color":"purple",
+            "data_name":"traveltime"
+        },
+        "blue":{
+            "line_color":"blue",
+            "data_name":"traveltime"
+        },
+        "green":{
+            "line_color":"green",
+            "data_name":"traveltime"
+        },
+        "yellow":{
+            "line_color":"yellow",
+            "data_name":"traveltime"
+        },
+        "orange":{
+            "line_color":"orange",
+            "data_name":"traveltime"
+        },
+        "red":{
+            "line_color":"red",
+            "data_name":"traveltime"
         }
-
     },
     "Maps":{
         "line_width":0.6,
@@ -92,6 +119,9 @@
         "units":"",
         "trim_min": null,
         "trim_max": null,
+        "dummy_data":{
+            "data_name":"dummy_data"
+        },
         "SIC":{
             "line_color":"gray",
             "line_width":0.05,
