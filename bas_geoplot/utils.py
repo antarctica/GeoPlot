@@ -1,8 +1,10 @@
 import logging
 import time
 import tracemalloc
+import numpy as np
 
 from functools import wraps
+
 
 def memory_trace(func):
     @wraps(func)
@@ -19,6 +21,7 @@ def memory_trace(func):
         return res
     return wrapper
 
+
 def timed_call(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -29,6 +32,7 @@ def timed_call(func):
                      format(func.__name__, end - start))
         return res
     return wrapper
+
 
 def setup_logging(func,
                   log_format="[%(asctime)-17s :%(levelname)-8s] - %(message)s"):
@@ -66,3 +70,40 @@ def setup_logging(func,
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         return parsed_args
     return wrapper
+
+
+def convert_decimal_days(decimal_days, mins=False):
+    """
+    Convert decimal days to more readable Days, Hours and (optionally) Minutes
+    Args:
+        decimal_days (float): Number of days as a decimal
+        mins (bool): Determines whether to return minutes or decimal hours
+    Returns:
+        new_time (str): The time in the new format
+    """
+    frac_d, days = np.modf(decimal_days)
+    hours = frac_d * 24.0
+
+    if mins:
+        frac_h, hours = np.modf(hours)
+        minutes = round(frac_h * 60.0)
+        if days:
+            if round(days) == 1:
+                new_time = f"{round(days)} day {round(hours)} hours {minutes} minutes"
+            else:
+                new_time = f"{round(days)} days {round(hours)} hours {minutes} minutes"
+        elif hours:
+            new_time = f"{round(hours)} hours {minutes} minutes"
+        else:
+            new_time = f"{minutes} minutes"
+    else:
+        hours = round(hours, 2)
+        if days:
+            if round(days) == 1:
+                new_time = f"{round(days)} day {hours} hours"
+            else:
+                new_time = f"{round(days)} days {hours} hours"
+        else:
+            new_time = f"{hours} hours"
+
+    return new_time
