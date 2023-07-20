@@ -186,6 +186,26 @@
             "data_name":"battery",
             "units":"Ah/Day"
         },
+        "Shortest Time":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"Spectral_03"
+            },
+            "fill_opacity":0.6,
+            "data_name":"shortest_traveltime",
+            "units":"Days"
+        },
+        "Wave Height":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuGn_09"
+            },
+            "fill_opacity":0.6,
+            "data_name":"swh",
+            "units":"m"
+        },
         "tCO2e":{
             "line_color":"gray",
             "line_width":0.05,
@@ -280,6 +300,15 @@
             "color":"blue",
             "line_width":0.001,
             "scale":0.1
+        },
+        "Wave Direction":{
+            "Long":"cx",
+            "Lat":"cy",
+            "U":"uW",
+            "V":"vW",
+            "color":"green",
+            "line_width":0.001,
+            "scale":0.1
         }
     },
     "TimeData":{
@@ -302,12 +331,14 @@
             {"Name":"Max Speed (knots)","data":"speed","scaling_factor":0.539957},
             {"Name":"Max Speed (km/hr)","data":"speed"},
             {"Name":"Fuel (Tonnes/Day)","data":"fuel"},
+            {"Name":"Battery (Ah/Day)","data":"battery"},
             {"Name":"Current Magnitude (m/s)","data":"mC"},
             {"Name":"Current Component X (m/s)","data":"uC"},
             {"Name":"Current Component Y (m/s)","data":"vC"},
-            {"Name":"Wind Magnitude (m/s)","data":"mW"},
+            {"Name":"Wind Magnitude (m/s)","data":"m10"},
             {"Name":"Wind Component X (m/s)","data":"u10"},
             {"Name":"Wind Component Y (m/s)","data":"v10"},
+            {"Name":"Wave Height (m)","data":"swh"},
             {"Name":"Minimum Depth (m)","data":"elevation","scaling_factor":-1},
             {"Name":"Ice Resistance (kN)","data":"ice resistance","scaling_factor":0.001},
             {"Name":"Cell Centre Longitude (deg)","data":"cx"},
