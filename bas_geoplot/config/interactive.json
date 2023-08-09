@@ -244,6 +244,12 @@
             "data_name": "ext_ice",
             "fill_opacity":0.6
         },
+        "Extreme Waves":{
+            "line_width":0.05,
+            "fill_color":"brown",
+            "data_name": "ext_waves",
+            "fill_opacity":0.6
+        },
         "Land Mask":{
             "fill_opacity":0.6,
             "data_name":"land",

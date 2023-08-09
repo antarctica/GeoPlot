@@ -118,8 +118,11 @@ def plot_mesh_cli():
         logging.debug("Plotting Wave Height")
         mp.Maps(mesh, 'Wave Height', predefined='Wave Height')
     if ('uW' in mesh.columns) and ('vW' in mesh.columns):
-        mp.Vectors(mesh, 'Wave Direction', predefined='Wave Direction')
+        mp.Vectors(mesh, 'Wave Direction', predefined='Wave Direction', show=False)
         logging.debug('Plotting wave direction')
+    if 'ext_waves' in mesh.columns:
+        logging.debug("Plotting Extreme Wave areas")
+        mp.Maps(mesh, 'Extreme Waves', predefined='Extreme Waves')
 
     # Plot routes and waypoints
     if 'paths' in info.keys():
