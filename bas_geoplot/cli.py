@@ -111,9 +111,18 @@ def plot_mesh_cli():
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
         mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
     if ('u10' in mesh.columns) and ('v10' in mesh.columns):
-        mesh['mW'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
+        mesh['m10'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
         mp.Vectors(mesh, 'Winds', predefined='Winds')
         logging.debug('Plotting winds')
+    if 'swh' in mesh.columns:
+        logging.debug("Plotting Wave Height")
+        mp.Maps(mesh, 'Wave Height', predefined='Wave Height')
+    if ('uW' in mesh.columns) and ('vW' in mesh.columns):
+        mp.Vectors(mesh, 'Wave Direction', predefined='Wave Direction', show=False)
+        logging.debug('Plotting wave direction')
+    if 'ext_waves' in mesh.columns:
+        logging.debug("Plotting Extreme Wave areas")
+        mp.Maps(mesh, 'Extreme Waves', predefined='Extreme Waves')
 
     # Plot routes and waypoints
     if 'paths' in info.keys():
