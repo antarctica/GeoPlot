@@ -46,17 +46,17 @@ def plot_mesh_cli():
     logging.info("{} {}".format(inspect.stack()[0][3][:-4], version))
     info = json.load(args.mesh)
     mesh = pd.DataFrame(info['cellboxes'])
-    region = info['config']['Mesh_info']['Region']
+    region = info['config']['mesh_info']['region']
 
     # Set-up title bar
     if args.rm_titlebar:
         output = None
     else:
         output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
-        output = '{} | Start Date: {}, End Date: {}'.format(output, region['startTime'], region['endTime'])
+        output = '{} | Start Date: {}, End Date: {}'.format(output, region['start_time'], region['end_time'])
 
     # Put mesh bounds in format required by fit_to_bounds
-    mesh_bounds = [[region["latMin"], region["longMin"]], [region["latMax"], region["longMax"]]]
+    mesh_bounds = [[region["lat_min"], region["long_min"]], [region["lat_max"], region["long_max"]]]
 
     # Initialise Map object
     if args.offline_filepath != '':
@@ -72,6 +72,9 @@ def plot_mesh_cli():
             mp = Map(title=output)
 
     # Plot maps of mesh info
+    if 'id' in mesh.columns:
+        logging.debug('Plotting mesh grid')
+        mp.Maps(mesh, 'id', predefined='id')
     if 'SIC' in mesh.columns:
         logging.debug("Plotting Sea Ice Concentration")
         mp.Maps(mesh, 'SIC', predefined='SIC')
@@ -103,10 +106,10 @@ def plot_mesh_cli():
         if args.currents_paths != '':
             logging.debug('Plotting currents from file')
             currents = pd.read_csv(args.currents_paths)
-            currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) &
-                                (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) &
-                                (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) &
-                                (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )
+            currents = currents[(currents['cx'] >=  info['config']['mesh_info']['region']['long_min']) &
+                                (currents['cx'] <=  info['config']['mesh_info']['region']['long_max']) &
+                                (currents['cy'] >=  info['config']['mesh_info']['region']['lat_min']) &
+                                (currents['cy'] <=  info['config']['mesh_info']['region']['lat_max'] )
             ].reset_index(drop=True)
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
         mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')

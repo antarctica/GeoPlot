@@ -263,7 +263,15 @@
         },
         "Mesh Grid Outline":
         {
-            "fill_color":"white"
+            "line_color":"gray",
+            "data_name":"geometry",
+            "fill_color":"white",
+            "fill_opacity": 0.1
+        },
+        "id":
+        {
+            "line_color":"black",
+            "data_name":"id"
         }
     },
     "Points":{
