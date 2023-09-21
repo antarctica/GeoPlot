@@ -502,7 +502,7 @@ class Map:
             self.map.add_child(colormap)
             self.map.add_child(BindColormap(feature_info,colormap))
         else:
-            if p['data_name'] and (type(dataframe_geo[p['data_name']].iloc[0]) is bool):
+            if p['data_name'] and (type(dataframe_geo[p['data_name']].iloc[0].item()) is bool):
                 dataframe_geo = dataframe_geo[dataframe_geo[p['data_name']] == True]
             if not dataframe_geo.empty:
                 folium.GeoJson(

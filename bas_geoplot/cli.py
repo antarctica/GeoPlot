@@ -72,9 +72,9 @@ def plot_mesh_cli():
             mp = Map(title=output)
 
     # Plot maps of mesh info
-    if 'id' in mesh.columns:
+    if 'cx' in mesh.columns:
         logging.debug('Plotting mesh grid')
-        mp.Maps(mesh, 'id', predefined='id')
+        mp.Maps(mesh, 'MeshGrid', predefined='cx')
     if 'SIC' in mesh.columns:
         logging.debug("Plotting Sea Ice Concentration")
         mp.Maps(mesh, 'SIC', predefined='SIC')

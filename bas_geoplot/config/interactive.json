@@ -268,10 +268,10 @@
             "fill_color":"white",
             "fill_opacity": 0.1
         },
-        "id":
+        "cx":
         {
             "line_color":"black",
-            "data_name":"id"
+            "data_name":"cx"
         }
     },
     "Points":{
@@ -359,7 +359,8 @@
             {"Name":"Cell Centre Latitude (deg)","data":"cy"},
             {"Name":"Cell Width (deg)","data":"dcx"},
             {"Name":"Cell Height (deg)","data":"dcy"},
-            {"Name":"Cell ID","data":"id"}
+            {"Name":"Cell ID","data":"id"},
+            {"Name": "Exclusion Zone", "data": "exclusion_zone"}
             ]
         }
     }
