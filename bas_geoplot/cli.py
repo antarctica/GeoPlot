@@ -18,8 +18,10 @@ def get_args(default_output: str):
 
     ap = argparse.ArgumentParser()
     ap.add_argument("-o", "--output", default=default_output, help="Output file")
-    ap.add_argument("-v", "--verbose", default=False, action="store_true", help="Turn on DEBUG level logging")
-    ap.add_argument("-s", "--static", default=False, action="store_true", help="Save the plot as a static .PNG")
+    ap.add_argument("-v", "--verbose", default=False, action="store_true",
+                    help="Turn on DEBUG level logging")
+    ap.add_argument("-s", "--static", default=False, action="store_true",
+                    help="Save the plot as a static .PNG")
     ap.add_argument("-c", "--currents_paths", default='', help="Path to currents file")
     ap.add_argument("-l", "--coastlines", default='', help="Loading Offline Coastlines")
     ap.add_argument("-j", "--offline_filepath", default='', help="Location of Offline File Information")
@@ -28,9 +30,12 @@ def get_args(default_output: str):
     ap.add_argument("mesh", type=argparse.FileType('r'), help="file location of mesh to be plot")
     ap.add_argument('--version', action='version',
                     version='%(prog)s {version}'.format(version=version))
-    ap.add_argument("-t", "--rm_titlebar", default=False, action="store_true", help="Remove titlebar from html")
+    ap.add_argument("-t", "--rm_titlebar", default=False, action="store_true",
+                    help="Remove titlebar from html")
     ap.add_argument("-r", "--route", default=None, help="Plot additional route on mesh")
-    ap.add_argument("-a", "--arrows", default=False, action="store_true", help="Add directional arrows to routes")
+    ap.add_argument("-a", "--arrows", default=False, action="store_true",
+                    help="Add directional arrows to routes")
+    ap.add_argument("--custom_title", default="", help="Add a custom title to the plot")
 
     return ap.parse_args()
 
@@ -53,8 +58,14 @@ def plot_mesh_cli():
     if args.rm_titlebar:
         output = None
     else:
-        output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
-        output = '{} | Start Date: {}, End Date: {} | Split level: {}'.format(output, region['start_time'], region['end_time'], split_level)
+        if args.custom_title:
+            output = '{} | Start Date: {}, End Date: {} | Split level: {}'.format(args.custom_title,
+                                                                                  region['start_time'],
+                                                                                  region['end_time'], split_level)
+        else:
+            output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
+            output = '{} | Start Date: {}, End Date: {} | Split level: {}'.format(output, region['start_time'],
+                                                                                  region['end_time'], split_level)
 
     # Put mesh bounds in format required by fit_to_bounds
     mesh_bounds = [[region["lat_min"], region["long_min"]], [region["lat_max"], region["long_max"]]]
@@ -152,7 +163,8 @@ def plot_mesh_cli():
         logging.debug('Plotting paths')
         paths = info['paths']
         mp.Paths(paths, 'Route - Traveltime', predefined='Traveltime (Days)', arrows=args.arrows)
-        mp.Paths(paths, 'Route - Distance', predefined='Distance (Nautical miles)', show=False, arrows=args.arrows)
+        mp.Paths(paths, 'Route - Distance', predefined='Distance (Nautical miles)', show=False,
+                 arrows=args.arrows)
         mp.Paths(paths, 'Route - Max Speed', predefined='Max Speed (knots)', show=False, arrows=args.arrows)
         if 'fuel' in mesh.columns:
             mp.Paths(paths, 'Route - Fuel', predefined='Fuel', show=False, arrows=args.arrows)
