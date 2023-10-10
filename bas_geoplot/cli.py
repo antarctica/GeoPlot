@@ -46,17 +46,18 @@ def plot_mesh_cli():
     logging.info("{} {}".format(inspect.stack()[0][3][:-4], version))
     info = json.load(args.mesh)
     mesh = pd.DataFrame(info['cellboxes'])
-    region = info['config']['Mesh_info']['Region']
+    region = info['config']['mesh_info']['region']
+    split_level = info['config']['mesh_info']['splitting']['split_depth']
 
     # Set-up title bar
     if args.rm_titlebar:
         output = None
     else:
         output = ' '.join(args.output.split('/')[-1].split('.')[:-1])
-        output = '{} | Start Date: {}, End Date: {}'.format(output, region['startTime'], region['endTime'])
+        output = '{} | Start Date: {}, End Date: {} | Split level: {}'.format(output, region['start_time'], region['end_time'], split_level)
 
     # Put mesh bounds in format required by fit_to_bounds
-    mesh_bounds = [[region["latMin"], region["longMin"]], [region["latMax"], region["longMax"]]]
+    mesh_bounds = [[region["lat_min"], region["long_min"]], [region["lat_max"], region["long_max"]]]
 
     # Initialise Map object
     if args.offline_filepath != '':
@@ -103,26 +104,45 @@ def plot_mesh_cli():
         if args.currents_paths != '':
             logging.debug('Plotting currents from file')
             currents = pd.read_csv(args.currents_paths)
-            currents = currents[(currents['cx'] >=  info['config']['Mesh_info']['Region']['longMin']) &
-                                (currents['cx'] <=  info['config']['Mesh_info']['Region']['longMax']) &
-                                (currents['cy'] >=  info['config']['Mesh_info']['Region']['latMin']) &
-                                (currents['cy'] <=  info['config']['Mesh_info']['Region']['latMax'] )
+            currents = currents[(currents['cx'] >=  info['config']['mesh_info']['region']['long_min']) &
+                                (currents['cx'] <=  info['config']['mesh_info']['region']['long_max']) &
+                                (currents['cy'] >=  info['config']['mesh_info']['region']['lat_min']) &
+                                (currents['cy'] <=  info['config']['mesh_info']['region']['lat_max'] )
             ].reset_index(drop=True)
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
         mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
     if ('u10' in mesh.columns) and ('v10' in mesh.columns):
         mesh['m10'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
-        mp.Vectors(mesh, 'Winds', predefined='Winds')
+        mp.Vectors(mesh, 'Winds', predefined='Winds', show=False)
+        mp.Maps(mesh, 'Wind Speed', predefined='Wind Speed', show=False)
         logging.debug('Plotting winds')
     if 'swh' in mesh.columns:
-        logging.debug("Plotting Wave Height")
-        mp.Maps(mesh, 'Wave Height', predefined='Wave Height')
+        logging.debug("Plotting Significant Wave Height")
+        mp.Maps(mesh, 'Significant Wave Height', predefined='Significant Wave Height')
+    if 'hmax' in mesh.columns:
+        logging.debug("Plotting Max Wave Height")
+        mp.Maps(mesh, 'Max Wave Height', predefined='Max Wave Height', show=False)
+    if 'mwd' in mesh.columns:
+        logging.debug("Plotting Mean Wave Direction")
+        mp.Maps(mesh, 'Mean Wave Direction', predefined='Wave Direction', show=False)
+    if 'mwp' in mesh.columns:
+        logging.debug("Plotting Mean Wave Period")
+        mp.Maps(mesh, 'Mean Wave Period', predefined='Wave Period', show=False)
+    if 'wind_dir' in mesh.columns:
+        logging.debug("Plotting Wind Direction")
+        mp.Maps(mesh, 'Wind Direction', predefined='Wind Direction', show=False)
+    if 'wind_mag' in mesh.columns:
+        logging.debug("Plotting Wind Magnitude")
+        mp.Maps(mesh, 'Wind Magnitude', predefined='Wind Magnitude', show=False)
     if ('uW' in mesh.columns) and ('vW' in mesh.columns):
         mp.Vectors(mesh, 'Wave Direction', predefined='Wave Direction', show=False)
         logging.debug('Plotting wave direction')
     if 'ext_waves' in mesh.columns:
         logging.debug("Plotting Extreme Wave areas")
         mp.Maps(mesh, 'Extreme Waves', predefined='Extreme Waves')
+    if 'offshore_platforms' in mesh.columns:
+        logging.debug("Plotting Offshore Platforms")
+        mp.Maps(mesh, 'Offshore Platforms', predefined='Offshore Platforms')
 
     # Plot routes and waypoints
     if 'paths' in info.keys():
