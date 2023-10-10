@@ -327,13 +327,6 @@
             "fill_color":"blue",
             "line_width":0.05
         },
-        "Mesh Grid Outline":
-        {
-            "line_color":"gray",
-            "data_name":"geometry",
-            "fill_color":"white",
-            "fill_opacity": 0.1
-        },
         "cx":
         {
             "line_color":"black",
@@ -430,8 +423,7 @@
             {"Name":"Cell Centre Latitude (deg)","data":"cy"},
             {"Name":"Cell Width (deg)","data":"dcx"},
             {"Name":"Cell Height (deg)","data":"dcy"},
-            {"Name":"Cell ID","data":"id"},
-            {"Name": "Exclusion Zone", "data": "exclusion_zone"}
+            {"Name":"Cell ID","data":"id"}
             ]
         }
     }
