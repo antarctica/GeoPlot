@@ -196,7 +196,7 @@
             "data_name":"shortest_traveltime",
             "units":"Days"
         },
-        "Wave Height":{
+        "Significant Wave Height":{
             "line_color":"gray",
             "line_width":0.05,
             "fill_color":{
@@ -205,6 +205,66 @@
             "fill_opacity":0.6,
             "data_name":"swh",
             "units":"m"
+        },
+        "Max Wave Height":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuGn_08"
+            },
+            "fill_opacity":0.6,
+            "data_name":"hmax",
+            "units":"m"
+        },
+        "Wave Period":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuGn_07"
+            },
+            "fill_opacity":0.6,
+            "data_name":"mwp",
+            "units":"s"
+        },
+        "Wave Direction":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuGn_07"
+            },
+            "fill_opacity":0.6,
+            "data_name":"mwd",
+            "units":"degrees"
+        },
+        "Wind Direction":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuPu_07"
+            },
+            "fill_opacity":0.6,
+            "data_name":"wind_dir",
+            "units":"degrees"
+        },
+        "Wind Magnitude":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuPu_08"
+            },
+            "fill_opacity":0.6,
+            "data_name":"wind_mag",
+            "units":"m/s"
+        },
+        "Wind Speed":{
+            "line_color":"gray",
+            "line_width":0.05,
+            "fill_color":{
+                "colormap":"BuPu_08"
+            },
+            "fill_opacity":0.6,
+            "data_name":"m10",
+            "units":"m/s"
         },
         "tCO2e":{
             "line_color":"gray",
@@ -248,6 +308,12 @@
             "line_width":0.05,
             "fill_color":"brown",
             "data_name": "ext_waves",
+            "fill_opacity":0.6
+        },
+        "Offshore Platforms":{
+            "line_width":0.05,
+            "fill_color":"red",
+            "data_name": "offshore_platforms",
             "fill_opacity":0.6
         },
         "Land Mask":{
@@ -352,7 +418,12 @@
             {"Name":"Wind Magnitude (m/s)","data":"m10"},
             {"Name":"Wind Component X (m/s)","data":"u10"},
             {"Name":"Wind Component Y (m/s)","data":"v10"},
-            {"Name":"Wave Height (m)","data":"swh"},
+            {"Name":"Significant Wave Height (m)","data":"swh"},
+            {"Name":"Max Wave Height (m)","data":"hmax"},
+            {"Name":"Wave Period (s)","data":"mwp"},
+            {"Name":"Mean Wave Direction (degrees)","data":"mwd"},
+            {"Name":"Wind Magnitude (m/s)","data":"wind_mag"},
+            {"Name":"Wind Direction (degrees)","data":"wind_dir"},
             {"Name":"Minimum Depth (m)","data":"elevation","scaling_factor":-1},
             {"Name":"Ice Resistance (kN)","data":"ice resistance","scaling_factor":0.001},
             {"Name":"Cell Centre Longitude (deg)","data":"cx"},
