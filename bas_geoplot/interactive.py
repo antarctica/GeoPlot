@@ -6,6 +6,7 @@ import logging
 import pandas as pd
 import numpy as np
 import geopandas as gpd
+import re
 
 from folium import plugins
 from folium.plugins import TimestampedGeoJson
@@ -224,24 +225,46 @@ class Map:
 
         html = map.get_root().render()
         if self._offline_mode:
-            html = html.replace('https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js',f'{os.path.join(self._offline_mode_path, "leaflet.js")}')
-            html = html.replace('https://code.jquery.com/jquery-1.12.4.min.js',f'{os.path.join(self._offline_mode_path, "jquery-1.12.4.min.js")}')
-            html = html.replace('https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js',f'{os.path.join(self._offline_mode_path, "bootstrap.min.js")}')
-            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js',f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.js")}')
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/leaflet@\d+\.\d+\.\d+/dist/leaflet.js',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.js")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/bootstrap@\d+\.\d+\.\d+/dist/js/bootstrap.bundle.min.js',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.bundle.min.js")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/bootstrap@\d+\.\d+\.\d+/dist/css/bootstrap.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.min.css")}', html)
+            html = re.sub(r'https://netdna.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/css/bootstrap.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap_netdna.min.css")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@\d+\.\d+\.\d+/css/all.min.css',
+                          f'{os.path.join(self._offline_mode_path, "all.min.css")}', html)
+            html = html.replace('https://code.jquery.com/jquery-1.12.4.min.js',
+                                f'{os.path.join(self._offline_mode_path, "jquery-1.12.4.min.js")}')
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/js/bootstrap.min.js',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.min.js")}', html)
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/\d+\.\d+\.\d+/leaflet.awesome-markers.js',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.js")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/leaflet@\d+\.\d+\.\d+/dist/leaflet.css',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.css")}', html)
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/css/bootstrap.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.min.css")}', html)
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/css/bootstrap-theme.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap-theme.min.css")}', html)
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/font-awesome/\d+\.\d+\.\d+/css/font-awesome.min.css',
+                          f'{os.path.join(self._offline_mode_path, "font-awesome.min.css")}', html)
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/\d+\.\d+\.\d+/leaflet.awesome-markers.css',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.css")}', html)
+            html = html.replace("https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css",
+                                f'{os.path.join(self._offline_mode_path, "leaflet.awesome.rotate.min.css")}')
 
-            html = html.replace('https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css',f'{os.path.join(self._offline_mode_path, "leaflet.css")}')
-            html = html.replace('https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css',f'{os.path.join(self._offline_mode_path, "bootstrap.min.css")}')
-            html = html.replace("https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css",f'{os.path.join(self._offline_mode_path, "bootstrap-theme.min.css")}')
-            html = html.replace("https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css",f'{os.path.join(self._offline_mode_path, "font-awesome.min.css")}')
-            html = html.replace("https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css",f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.css")}')
-            html = html.replace("https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css",f'{os.path.join(self._offline_mode_path, "leaflet.awesome.rotate.min.css")}')
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/d3/\d+\.\d+\.\d+/d3.min.js',
+                          f'{os.path.join(self._offline_mode_path, "d3.min.js")}', html)
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/\d+\.\d+\.\d+/leaflet-dvf.markers.min.js',
+                          f'{os.path.join(self._offline_mode_path, "leaflet-dvf.markers.min.js")}', html)
+            html = html.replace('https://i.ibb.co/XtZdzDt/BAS-colour-eps.png',
+                                f'{os.path.join(self._offline_mode_path, "BAS-colour-eps.png")}')
 
-            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',f'{os.path.join(self._offline_mode_path, "d3.min.js")}')
-            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/0.3.0/leaflet-dvf.markers.min.js',f'{os.path.join(self._offline_mode_path, "leaflet-dvf.markers.min.js")}')
-            html = html.replace('https://i.ibb.co/XtZdzDt/BAS-colour-eps.png',f'{os.path.join(self._offline_mode_path, "BAS-colour-eps.png")}')
-
-            html = html.replace('https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.js',f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.js")}')
-            html = html.replace("https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.css",f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.css")}')
+            html = html.replace('https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.js',
+                                f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.js")}')
+            html = html.replace("https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.css",
+                                f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.css")}')
 
         with open(file,'w') as fp:
             fp.write(html)
