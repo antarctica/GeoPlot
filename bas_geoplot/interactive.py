@@ -6,6 +6,7 @@ import logging
 import pandas as pd
 import numpy as np
 import geopandas as gpd
+import re
 
 from folium import plugins
 from folium.plugins import TimestampedGeoJson
@@ -224,24 +225,46 @@ class Map:
 
         html = map.get_root().render()
         if self._offline_mode:
-            html = html.replace('https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js',f'{os.path.join(self._offline_mode_path, "leaflet.js")}')
-            html = html.replace('https://code.jquery.com/jquery-1.12.4.min.js',f'{os.path.join(self._offline_mode_path, "jquery-1.12.4.min.js")}')
-            html = html.replace('https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js',f'{os.path.join(self._offline_mode_path, "bootstrap.min.js")}')
-            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js',f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.js")}')
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/leaflet@\d+\.\d+\.\d+/dist/leaflet.js',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.js")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/bootstrap@\d+\.\d+\.\d+/dist/js/bootstrap.bundle.min.js',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.bundle.min.js")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/bootstrap@\d+\.\d+\.\d+/dist/css/bootstrap.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.min.css")}', html)
+            html = re.sub(r'https://netdna.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/css/bootstrap.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap_netdna.min.css")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@\d+\.\d+\.\d+/css/all.min.css',
+                          f'{os.path.join(self._offline_mode_path, "all.min.css")}', html)
+            html = html.replace('https://code.jquery.com/jquery-1.12.4.min.js',
+                                f'{os.path.join(self._offline_mode_path, "jquery-1.12.4.min.js")}')
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/js/bootstrap.min.js',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.min.js")}', html)
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/\d+\.\d+\.\d+/leaflet.awesome-markers.js',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.js")}', html)
+            html = re.sub(r'https://cdn.jsdelivr.net/npm/leaflet@\d+\.\d+\.\d+/dist/leaflet.css',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.css")}', html)
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/css/bootstrap.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap.min.css")}', html)
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/bootstrap/\d+\.\d+\.\d+/css/bootstrap-theme.min.css',
+                          f'{os.path.join(self._offline_mode_path, "bootstrap-theme.min.css")}', html)
+            html = re.sub(r'https://maxcdn.bootstrapcdn.com/font-awesome/\d+\.\d+\.\d+/css/font-awesome.min.css',
+                          f'{os.path.join(self._offline_mode_path, "font-awesome.min.css")}', html)
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/\d+\.\d+\.\d+/leaflet.awesome-markers.css',
+                          f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.css")}', html)
+            html = html.replace("https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css",
+                                f'{os.path.join(self._offline_mode_path, "leaflet.awesome.rotate.min.css")}')
 
-            html = html.replace('https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css',f'{os.path.join(self._offline_mode_path, "leaflet.css")}')
-            html = html.replace('https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css',f'{os.path.join(self._offline_mode_path, "bootstrap.min.css")}')
-            html = html.replace("https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css",f'{os.path.join(self._offline_mode_path, "bootstrap-theme.min.css")}')
-            html = html.replace("https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css",f'{os.path.join(self._offline_mode_path, "font-awesome.min.css")}')
-            html = html.replace("https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css",f'{os.path.join(self._offline_mode_path, "leaflet.awesome-markers.css")}')
-            html = html.replace("https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css",f'{os.path.join(self._offline_mode_path, "leaflet.awesome.rotate.min.css")}')
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/d3/\d+\.\d+\.\d+/d3.min.js',
+                          f'{os.path.join(self._offline_mode_path, "d3.min.js")}', html)
+            html = re.sub(r'https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/\d+\.\d+\.\d+/leaflet-dvf.markers.min.js',
+                          f'{os.path.join(self._offline_mode_path, "leaflet-dvf.markers.min.js")}', html)
+            html = html.replace('https://i.ibb.co/XtZdzDt/BAS-colour-eps.png',
+                                f'{os.path.join(self._offline_mode_path, "BAS-colour-eps.png")}')
 
-            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',f'{os.path.join(self._offline_mode_path, "d3.min.js")}')
-            html = html.replace('https://cdnjs.cloudflare.com/ajax/libs/leaflet-dvf/0.3.0/leaflet-dvf.markers.min.js',f'{os.path.join(self._offline_mode_path, "leaflet-dvf.markers.min.js")}')
-            html = html.replace('https://i.ibb.co/XtZdzDt/BAS-colour-eps.png',f'{os.path.join(self._offline_mode_path, "BAS-colour-eps.png")}')
-
-            html = html.replace('https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.js',f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.js")}')
-            html = html.replace("https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.css",f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.css")}')
+            html = html.replace('https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.js',
+                                f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.js")}')
+            html = html.replace("https://cdn.jsdelivr.net/gh/marslan390/BeautifyMarker/leaflet-beautify-marker-icon.min.css",
+                                f'{os.path.join(self._offline_mode_path, "leaflet-beautify-marker-icon.min.css")}')
 
         with open(file,'w') as fp:
             fp.write(html)
@@ -684,153 +707,4 @@ class Map:
             date_options='DD/MM/YYYY HH:mm:ss',
             add_last_point=p['point']
         ).add_to(self.map)
-    
 
-# def TimeMapSDA(PATH,map):
-#     #'/Users/jsmith/Documents/Research/Researcher_BAS/RoutePlanning/SDADT-Positions'
-#     Info = SDAPosition(PATH)
-#     lines=[]
-#     Points = Info[['Long','Lat']].to_numpy()
-#     Points[:,0] = Points[:,0]-360
-#     entry = {}
-#     entry['coordinates'] = Points.tolist()
-#     entry['dates'] = Info['Time'].dt.strftime('%Y-%m-%dT%H:%M:%S').to_list()
-#     entry['color'] = 'blue'
-#     lines.append(entry)
-
-
-#     TMS = Info['Time'].dt.strftime('%Y-%m-%dT%H:%M:%S').to_list()
-#     pointfeatures = [
-#         {
-#             "type": "Feature",
-#             "geometry": {
-#                 "type": "Point",
-#                 "coordinates": pt.tolist(),
-#             },
-#             'properties': {
-#                 'time': TMS[idx],
-#                 'style': {'color': ''},
-#                 'icon': 'circle',
-#                 'iconstyle': {
-#                     'fillColor': '#black',
-#                     'fillOpacity': 0.8,
-#                     'stroke': 'true',
-#                     'radius': 2
-#                 }
-#     },
-
-#         }
-#         for idx,pt in enumerate(Points)
-#     ]
-
-
-#     features = [
-#         {
-#             "type": "Feature",
-#             "geometry": {
-#                 "type": "LineString",
-#                 "coordinates": line["coordinates"],
-#             },
-#             "properties": {
-#                 "times": line["dates"],
-#                 "style": {
-#                     "weight": line["weight"] if "weight" in line else 3,
-#                     'color': 'blue',
-#                     "line-dasharray": [0.1, 1.8]
-#                 },
-#                 'icon': 'circle',
-#                 'iconstyle': {'color': 'blue','iconSize': [1,1]}
-#             },
-#         }
-#         for line in lines
-#     ]
-
-#     features =  features + pointfeatures
-
-#     TimestampedGeoJson(
-#         {
-#             "type": "FeatureCollection",
-#             "features": features,
-#         },
-#         period="PT1H",
-#         duration="P7D",
-#         auto_play=False,
-#         add_last_point=True,
-#         max_speed=50
-#     ).add_to(map)
-#     return map
-
-
-# def MapMesh(cellGrid,map,threshold=0.8):
-#     DF = MeshDF(cellGrid)
-#     LandDF = DF[DF['Land'] == True]
-#     IceDF  = DF[DF['Land'] == False]
-#     ThickIceDF = IceDF[IceDF['Ice Area'] >= threshold*100]
-#     ThinIceDF  = IceDF[IceDF['Ice Area'] < threshold*100]
-
-#     # ==== Plotting Ice ==== 
-#     iceInfo = folium.FeatureGroup(name='Ice Mesh')
-#     folium.GeoJson(
-#         IceDF,
-#         style_function=lambda x: {
-#                 'fillColor': 'white',
-#                 'color': 'gray',
-#                 'weight': 0.5,
-#                 'fillOpacity': x['properties']['Ice Area']/100
-#             }
-#     ).add_to(iceInfo)
-#     folium.GeoJson(
-#         ThickIceDF,
-#         style_function=lambda x: {
-#                 'color': 'red',
-#                 'weight': 0.5,
-#                 'fillOpacity': 0.0
-#             }
-#     ).add_to(iceInfo)
-#     iceInfo.add_to(map)
-
-#     # ===== Plotting Land =====
-#     landInfo = folium.FeatureGroup(name='Land Mesh')
-#     folium.GeoJson(
-#         LandDF,
-#         style_function= lambda x: {
-#                 'fillColor': 'green',
-#                 'color': 'gray',
-#                 'weight': 0.5,
-#                 'fillOpacity': 0.3
-#             }
-#     ).add_to(landInfo)
-#     landInfo.add_to(map)
-
-#     # ===== Plotting Mesh Info =====
-#     bathInfo = folium.FeatureGroup(name='Bathymetry Mesh',show=False)
-#     colormap = linear.Reds_09.scale(min(ThinIceDF['Depth']),max(ThinIceDF['Depth']))
-#     folium.GeoJson(
-#         IceDF,
-#         style_function=lambda x: {
-#                 'fillColor': colormap(x['properties']['Depth']),
-#                 'color': 'gray',
-#                 'weight': 0.5,
-#                 'fillOpacity': 0.3
-#             }
-#     ).add_to(bathInfo)
-#     bathInfo.add_to(map)
-#     # ===== Plotting Mesh Info =====
-#     meshInfo = folium.FeatureGroup(name='Mesh Information',show=False)
-#     folium.GeoJson(
-#         DF,
-#         style_function= lambda x: {
-#                 'fillColor': 'black',
-#                 'color': 'gray',
-#                 'weight': 0.5,
-#                 'fillOpacity': 0.
-#             },
-#         tooltip=folium.GeoJsonTooltip(
-#             fields=['Ice Area', 'Land','Cx','Cy','Depth','Vector','Index'],
-#             aliases=['Ice Area (%)', 'Land','Centroid Cx [Long]','Centroid Cy [Lat]','Depth(m)','Vector (m/s)','Cell Index'],
-#             localize=True
-#         ),
-#         name='Land Grid'
-#     ).add_to(meshInfo)
-#     meshInfo.add_to(map)
-#     return map

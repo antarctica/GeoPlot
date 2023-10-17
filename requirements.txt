@@ -5,4 +5,5 @@ branca
 numpy
 shapely
 jinja2
+urllib3<2
 pyproj
