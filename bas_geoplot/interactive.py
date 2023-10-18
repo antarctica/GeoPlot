@@ -473,7 +473,7 @@ class Map:
             dataframe_pandas = dataframe_pandas[dataframe_pandas['land']==False].reset_index(drop=True)
 
         # For array values we either plot each value as a separate polygon or just the average of the values in the list
-        if type(dataframe_pandas[p['data_name']][0]) is list:
+        if any(type(d) is list for d in dataframe_pandas[p['data_name']]):
             if plot_sectors:
                 dataframe_pandas = sectorise_df(dataframe_pandas, p['data_name'])
             else:
