@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from bas_geoplot import __version__ as version
-from bas_geoplot.utils import setup_logging, timed_call
+from bas_geoplot.utils import setup_logging, timed_call, gpx_route_import
 from bas_geoplot.interactive import Map
 
 
@@ -45,7 +45,6 @@ def plot_mesh_cli():
     """
         CLI entry point to plot an environmental mesh and associated routes/waypoints
     """
-
     # Set output location and load mesh info
     args = get_args("interactive_plot.html")
     logging.info("{} {}".format(inspect.stack()[0][3][:-4], version))
@@ -177,10 +176,17 @@ def plot_mesh_cli():
         mp.Points(waypoints, 'Waypoints', names={"font_size":10.0})
     if args.route:
         logging.debug('Plotting user defined route')
-        with open(args.route, "r") as f:
-            route_json = json.load(f)
-        mp.Paths(route_json, 'User Route - Traveltime', predefined='Traveltime (Days)', arrows=args.arrows)
-        mp.Paths(route_json, 'User Route - Fuel', predefined='Fuel', show=False, arrows=args.arrows)
+        # Read in as either GPX or GeoJSON
+        filetype = args.route.split('.')[-1]
+        if filetype == 'gpx':
+            route_json = gpx_route_import(args.route)
+        elif filetype in ['json', 'geojson']:
+            route_json = json.load(open(args.route))
+        else:
+            raise NameError("User defined route needs to be GPX or GeoJSON file!")
+
+        mp.Paths(route_json, 'User Route - Traveltime', predefined='black', arrows=args.arrows)
+        mp.Paths(route_json, 'User Route - Fuel', predefined='green', show=False, arrows=args.arrows)
 
     # Set-up mesh info and save map to html file
     mp.MeshInfo(mesh, 'Mesh Info', show=False)
