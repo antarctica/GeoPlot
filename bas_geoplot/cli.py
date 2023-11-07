@@ -180,13 +180,15 @@ def plot_mesh_cli():
         filetype = args.route.split('.')[-1]
         if filetype == 'gpx':
             route_json = gpx_route_import(args.route)
+            
+            mp.Paths(route_json, 'User Route - GPX', predefined='black', arrows=args.arrows)
         elif filetype in ['json', 'geojson']:
             route_json = json.load(open(args.route))
+            mp.Paths(route_json, 'User Route - Traveltime', predefined='black', arrows=args.arrows)
+            mp.Paths(route_json, 'User Route - Fuel', predefined='green', show=False, arrows=args.arrows)
         else:
             raise NameError("User defined route needs to be GPX or GeoJSON file!")
 
-        mp.Paths(route_json, 'User Route - Traveltime', predefined='black', arrows=args.arrows)
-        mp.Paths(route_json, 'User Route - Fuel', predefined='green', show=False, arrows=args.arrows)
 
     # Set-up mesh info and save map to html file
     mp.MeshInfo(mesh, 'Mesh Info', show=False)
