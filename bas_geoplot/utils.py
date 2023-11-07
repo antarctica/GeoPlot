@@ -2,7 +2,8 @@ import logging
 import time
 import tracemalloc
 import numpy as np
-
+import geopandas as gpd
+import json
 from functools import wraps
 
 
@@ -129,6 +130,9 @@ def gpx_route_import(f_name):
     # Extract start and end waypoints and add to geojson properties
     geojson['features'][0]['properties']['from'] = gdf_p['name'].iloc[0]
     geojson['features'][0]['properties']['to'] = gdf_p['name'].iloc[-1]
+    # Spoof traveltime so that it plots successfully
+    geojson['features'][0]['properties']['traveltime'] = [-1]*len(
+                            geojson['features'][0]['geometry']['coordinates'])
 
     return geojson
 
