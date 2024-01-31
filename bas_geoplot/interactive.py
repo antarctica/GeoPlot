@@ -16,6 +16,7 @@ from shapely import wkt
 from shapely.geometry import Polygon
 from jinja2 import Template
 from pyproj import Geod
+from pandas.api.types import is_numeric_dtype
 
 from bas_geoplot.utils import convert_decimal_days
 
@@ -597,15 +598,17 @@ class Map:
 
         column_names = ['geometry']
         for col_info in p:
-            try:
                 column_name = col_info['Name']
                 data = col_info['data']
-                dataframe_geo[column_name] = dataframe_geo[data]
-                if 'scaling_factor' in col_info.keys():
-                    dataframe_geo[column_name] = dataframe_geo[column_name]*col_info['scaling_factor']
-                column_names.append(column_name)
-            except:
-                continue
+                try:
+                    dataframe_geo[column_name] = dataframe_geo[data]
+                    if 'scaling_factor' in col_info.keys():
+                        if is_numeric_dtype(dataframe_geo[column_name]):
+                            dataframe_geo[column_name] = dataframe_geo[column_name]*col_info['scaling_factor']
+                        else:
+                            dataframe_geo[column_name] = scale_list_columns(dataframe_geo[column_name], col_info['scaling_factor'])
+                except KeyError:
+                    continue
         dataframe_geo = dataframe_geo[column_names]
 
         feature_info = self._layer(name,show=show)
@@ -708,3 +711,13 @@ class Map:
             add_last_point=p['point']
         ).add_to(self.map)
 
+def scale_list_columns(column, scaling_factor):
+    scaled_column = []
+    for c in column:
+        if type(c) == float:
+            scaled_column.append(c)
+        else:
+            scaled_column.append([round(x*scaling_factor, 3) for x in c])
+
+    # scaled_column = pd.Series(scaled_column)
+    return scaled_column
