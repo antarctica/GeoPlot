@@ -598,18 +598,26 @@ class Map:
 
         column_names = ['geometry']
         for col_info in p:
+            try:
                 column_name = col_info['Name']
                 data = col_info['data']
-                try:
-                    dataframe_geo[column_name] = dataframe_geo[data]
-                    if 'scaling_factor' in col_info.keys():
-                        if is_numeric_dtype(dataframe_geo[column_name]):
-                            dataframe_geo[column_name] = dataframe_geo[column_name]*col_info['scaling_factor']
-                        else:
-                            dataframe_geo[column_name] = scale_list_columns(dataframe_geo[column_name], col_info['scaling_factor'])
-                except KeyError:
-                    continue
+                dataframe_geo[column_name] = dataframe_geo[data]
+                # Apply scaling factor
+                if 'scaling_factor' in col_info.keys():
+                    if is_numeric_dtype(dataframe_geo[column_name]):
+                        dataframe_geo[column_name] = dataframe_geo[column_name]*col_info['scaling_factor']
+                    else:
+                        dataframe_geo[column_name] = scale_list_columns(dataframe_geo[column_name], col_info['scaling_factor'])
+                # Round values within array data types
+                elif any(type(d) is list for d in dataframe_geo[column_name]):
+                    dataframe_geo[column_name] = round_list_columns(dataframe_geo[column_name])
+
+                column_names.append(column_name)
+            # Catch KeyError when one of the default fields is not present
+            except KeyError:
+                continue
         dataframe_geo = dataframe_geo[column_names]
+        print(dataframe_geo)
 
         feature_info = self._layer(name,show=show)
         folium.GeoJson(dataframe_geo,
@@ -719,5 +727,14 @@ def scale_list_columns(column, scaling_factor):
         else:
             scaled_column.append([round(x*scaling_factor, 3) for x in c])
 
-    # scaled_column = pd.Series(scaled_column)
     return scaled_column
+
+def round_list_columns(column):
+    rounded_column = []
+    for c in column:
+        if type(c) == float:
+            rounded_column.append(c)
+        else:
+            rounded_column.append([round(x, 3) for x in c])
+
+    return rounded_column
