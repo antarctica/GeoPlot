@@ -9,15 +9,12 @@ import geopandas as gpd
 import re
 
 from folium import plugins
-from folium.plugins import TimestampedGeoJson
 from branca.colormap import linear
 from branca.element import MacroElement
 from shapely import wkt
 from shapely.geometry import Polygon
 from jinja2 import Template
 from pyproj import Geod
-from pandas.api.types import is_numeric_dtype
-
 from bas_geoplot.utils import convert_decimal_days
 
 
@@ -90,6 +87,36 @@ def sectorise_df(df,dn):
             idx = i*8 + j
             sec_df.loc[idx] = {dn:row[dn][j], 'geometry':poly}
     return sec_df
+
+
+def scale_list_columns(column, scaling_factor):
+    """
+        Takes in a column that contains at least some list values. Scales and then rounds any floats within the lists
+        to 3 decimal places.
+    """
+    scaled_column = []
+    for c in column:
+        if type(c) == float:
+            scaled_column.append(c)
+        else:
+            scaled_column.append([round(x*scaling_factor, 3) for x in c])
+
+    return scaled_column
+
+
+def round_list_columns(column):
+    """
+        Takes in a column that contains at least some list values and rounds any floats within the lists
+         to 3 decimal places.
+    """
+    rounded_column = []
+    for c in column:
+        if type(c) == float:
+            rounded_column.append(c)
+        else:
+            rounded_column.append([round(x, 3) for x in c])
+
+    return rounded_column
 
 
 class BindColormap(MacroElement):
@@ -604,7 +631,7 @@ class Map:
                 dataframe_geo[column_name] = dataframe_geo[data]
                 # Apply scaling factor
                 if 'scaling_factor' in col_info.keys():
-                    if is_numeric_dtype(dataframe_geo[column_name]):
+                    if pd.api.types.is_numeric_dtype(dataframe_geo[column_name]):
                         dataframe_geo[column_name] = dataframe_geo[column_name]*col_info['scaling_factor']
                     else:
                         dataframe_geo[column_name] = scale_list_columns(dataframe_geo[column_name], col_info['scaling_factor'])
@@ -630,117 +657,4 @@ class Map:
                 aliases=list(dataframe_geo.columns[1:]),
                 localize=True
             )
-        ).add_to(feature_info) 
-
-    def _MapArray(self,array,bounds,name,show=True):
-        feature_info = self._layer('{}'.format(name),show=show)
-        colormap = linear._colormaps['BuPu_09'].scale(0,100)
-        colormap.caption = '{} (%)'.format(name)
-        Zc = np.zeros((array.shape[0],array.shape[1],4))
-        for ii in range(Zc.shape[0]):
-            for jj in range(Zc.shape[1]):
-                z = array[ii,jj]
-                if np.isnan(z):
-                    Zc[ii,jj,:] = 0.0
-                else:
-                    Zc[ii,jj,:] = list(colormap.rgba_floats_tuple(z))
-
-
-        folium.raster_layers.ImageOverlay(
-            image=Zc[::-1],
-            bounds=bounds,
-            mercator_project=True,
-            opacity=0.6
         ).add_to(feature_info)
-        self.map.add_child(colormap)
-        self.map.add_child(BindColormap(feature_info,colormap))
-
-    def _Geotiff(self,path,name,show=True):
-        import rasterio
-        src = rasterio.open(path)
-        indx=1
-        trying=True
-        while trying:
-            try:
-                Z = src.read(indx)[::10,::10]
-                feature_info = self._layer('{} - Band {}'.format(name,indx),show=show)
-                opc = 0.8
-                colormap = linear._colormaps['viridis'].scale(Z.min(),Z.max())
-                colormap.caption = '{} - Band {}'.format(name,indx)
-                Zc = np.zeros((Z.shape[0],Z.shape[1],4))
-                for ii in range(Z.shape[0]):
-                    for jj in range(Z.shape[1]):
-                        z = Z[ii,jj]
-                        if np.isnan(z):
-                            Zc[ii,jj,:] = 0.0
-                        else:
-                            Zc[ii,jj,:] = list(colormap.rgba_floats_tuple(z))
-
-
-                img = folium.raster_layers.ImageOverlay(
-                    name="Band {}".format(indx),
-                    bounds = [[src.bounds[1], src.bounds[0]], [src.bounds[3], src.bounds[2]]],
-                    image=Zc,
-                    opacity=opc,
-                    mercator_project=True,
-                    pixelated=False,
-                    show = show
-                )
-                img.add_to(feature_info)
-                
-                self.map.add_child(colormap)
-                self.map.add_child(BindColormap(feature_info,colormap))
-            except:
-                trying=False
-            indx+=1
-
-    def _TimeData(self,geojson,predefined=None,**kwargs):
-        p = params_object('TimeData', predefined=predefined, **kwargs)
-
-        for ii in range(len(geojson['features'])):
-            geojson['features'][ii]['properties']['style'] = {}
-            geojson['features'][ii]['properties']['style']["weight"]  = p['weight']
-            geojson['features'][ii]['properties']['style']["color"]   = p['color']
-            geojson['features'][ii]['properties']['style']["opacity"] = p['opacity']
-
-            geojson['features'][ii]['properties']['icon'] = p["icon"],
-            geojson['features'][ii]['properties']['iconstyle'] = {'color': p['color'],'iconSize': [0.1,0.1]}
-
-        TimestampedGeoJson(
-            geojson,
-            period=p['period'],
-            duration=p['duration'],
-            auto_play=False,
-            loop=False,
-            loop_button=True,
-            date_options='DD/MM/YYYY HH:mm:ss',
-            add_last_point=p['point']
-        ).add_to(self.map)
-
-def scale_list_columns(column, scaling_factor):
-    """
-        Takes in a column that contains at least some list values. Scales and then rounds any floats within the lists
-        to 3 decimal places.
-    """
-    scaled_column = []
-    for c in column:
-        if type(c) == float:
-            scaled_column.append(c)
-        else:
-            scaled_column.append([round(x*scaling_factor, 3) for x in c])
-
-    return scaled_column
-
-def round_list_columns(column):
-    """
-        Takes in a column that contains at least some list values and rounds any floats within the lists
-         to 3 decimal places.
-    """
-    rounded_column = []
-    for c in column:
-        if type(c) == float:
-            rounded_column.append(c)
-        else:
-            rounded_column.append([round(x, 3) for x in c])
-
-    return rounded_column
