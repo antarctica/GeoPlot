@@ -611,13 +611,11 @@ class Map:
                 # Round values within array data types
                 elif any(type(d) is list for d in dataframe_geo[column_name]):
                     dataframe_geo[column_name] = round_list_columns(dataframe_geo[column_name])
-
                 column_names.append(column_name)
-            # Catch KeyError when one of the default fields is not present
+            # Catch KeyError when one of the default Mesh Info fields is not present
             except KeyError:
                 continue
         dataframe_geo = dataframe_geo[column_names]
-        print(dataframe_geo)
 
         feature_info = self._layer(name,show=show)
         folium.GeoJson(dataframe_geo,
@@ -720,6 +718,10 @@ class Map:
         ).add_to(self.map)
 
 def scale_list_columns(column, scaling_factor):
+    """
+        Takes in a column that contains at least some list values. Scales and then rounds any floats within the lists
+        to 3 decimal places.
+    """
     scaled_column = []
     for c in column:
         if type(c) == float:
@@ -730,6 +732,10 @@ def scale_list_columns(column, scaling_factor):
     return scaled_column
 
 def round_list_columns(column):
+    """
+        Takes in a column that contains at least some list values and rounds any floats within the lists
+         to 3 decimal places.
+    """
     rounded_column = []
     for c in column:
         if type(c) == float:
