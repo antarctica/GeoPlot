@@ -674,8 +674,10 @@ def plot_mesh(mesh_filename,basemap=False,**kwargs):
     mesh = pd.DataFrame(info['cellboxes'])
     region = info['config']['mesh_info']['region']
     split_level = info['config']['mesh_info']['splitting']['split_depth']
-
-    output = 'Start Date: {}, End Date: {} | Split level: {}'.format(region['start_time'],
+    if 'rm_title' in kwargs and kwargs['rm_title'] == True:
+        output=None
+    else:
+        output = 'Start Date: {}, End Date: {} | Split level: {}'.format(region['start_time'],
                                                                             region['end_time'], split_level)
 
     # Put mesh bounds in format required by fit_to_bounds
