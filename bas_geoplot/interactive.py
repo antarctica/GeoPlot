@@ -660,7 +660,7 @@ class Map:
             )
         ).add_to(feature_info)
 
-def plot_mesh(mesh_filename,basemap=False):
+def plot_mesh(mesh_filename,basemap=False,**kwargs):
 
     if type(mesh_filename) == str:
         with open(mesh_filename,'r') as fl:
@@ -681,7 +681,7 @@ def plot_mesh(mesh_filename,basemap=False):
     # Put mesh bounds in format required by fit_to_bounds
     mesh_bounds = [[region["lat_min"], region["long_min"]], [region["lat_max"], region["long_max"]]]
 
-    mp = Map(title=output,basemap=basemap)
+    mp = Map(title=output,basemap=basemap, **kwargs)
 
     # Plot maps of mesh info
     if 'cx' in mesh.columns:
