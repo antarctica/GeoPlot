@@ -36,6 +36,8 @@ def get_args(default_output: str):
     ap.add_argument("-a", "--arrows", default=False, action="store_true",
                     help="Add directional arrows to routes")
     ap.add_argument("--custom_title", default="", help="Add a custom title to the plot")
+    ap.add_argument("-b", "--no_basemap", default=False, action="store_true",
+                    help="Remove basemap from html")
 
     return ap.parse_args()
 
@@ -69,6 +71,9 @@ def plot_mesh_cli():
     # Put mesh bounds in format required by fit_to_bounds
     mesh_bounds = [[region["lat_min"], region["long_min"]], [region["lat_max"], region["long_max"]]]
 
+    # Determine whether to plot basemap
+    basemap = not args.no_basemap
+
     # Initialise Map object
     if args.offline_filepath != '':
         logging.debug("Offline .js & .css datastore - {}".format(args.offline_filepath))
@@ -80,7 +85,7 @@ def plot_mesh_cli():
         if args.coastlines != '':
             mp = Map(title=output, offline_coastlines=args.coastlines)
         else:
-            mp = Map(title=output)
+            mp = Map(title=output, basemap=basemap)
 
     # Plot maps of mesh info
     if 'cx' in mesh.columns:
