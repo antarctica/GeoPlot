@@ -661,13 +661,14 @@ class Map:
         ).add_to(feature_info)
 
 
-def plot_mesh(mesh_filename, basemap=False, **kwargs):
+def plot_mesh(mesh_filename, basemap=False, mesh_info=False, **kwargs):
     """
         Takes in a mesh and returns a Map object plotting a selection of common data interactively.
 
         Args:
             mesh_filename (str or dict): Input mesh as either a file path or dictionary
             basemap (bool): Determine whether to plot the openstreetmap basemap layer
+            mesh_info (bool): Determine whether to include the mesh info pop-up
         Returns:
             mp (Map): Interactive Map object with all relevant data plotted on it
     """
@@ -776,6 +777,9 @@ def plot_mesh(mesh_filename, basemap=False, **kwargs):
         logging.debug('Plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])
         mp.Points(waypoints, 'Waypoints', names={"font_size":10.0})
+
+    if mesh_info:
+        mp.MeshInfo(mesh, 'Mesh Info', show=False)
 
     mp.fit_to_bounds(mesh_bounds)
 
