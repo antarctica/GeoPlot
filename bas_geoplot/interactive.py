@@ -206,9 +206,10 @@ class Map:
         else:
             self._offline_mode = False
 
-        bsmap = folium.FeatureGroup(name='BaseMap')
-        folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
-        bsmap.add_to(self.map)
+        if p['basemap']:
+            bsmap = folium.FeatureGroup(name='BaseMap')
+            folium.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',attr="toner-bcg", name='Basemap').add_to(bsmap)
+            bsmap.add_to(self.map)
 
         if p['offline_coastlines']:
             bsmap = folium.FeatureGroup(name='Coastlines',show=True)
@@ -658,3 +659,128 @@ class Map:
                 localize=True
             )
         ).add_to(feature_info)
+
+
+def plot_mesh(mesh_filename, basemap=False, mesh_info=False, **kwargs):
+    """
+        Takes in a mesh and returns a Map object plotting a selection of common data interactively.
+
+        Args:
+            mesh_filename (str or dict): Input mesh as either a file path or dictionary
+            basemap (bool): Determine whether to plot the openstreetmap basemap layer
+            mesh_info (bool): Determine whether to include the mesh info pop-up
+        Returns:
+            mp (Map): Interactive Map object with all relevant data plotted on it
+    """
+
+    if isinstance(mesh_filename, str):
+        with open(mesh_filename, 'r') as fl:
+            info = json.load(fl)
+    elif isinstance(mesh_filename, dict):
+        info = mesh_filename
+    else:
+        raise TypeError('Input to plot_mesh should be either a filename as a string or a dict object!')
+
+    mesh = pd.DataFrame(info['cellboxes'])
+    region = info['config']['mesh_info']['region']
+    split_level = info['config']['mesh_info']['splitting']['split_depth']
+    if 'rm_title' in kwargs and kwargs['rm_title'] == True:
+        output=None
+    else:
+        output = 'Start Date: {}, End Date: {} | Split level: {}'.format(region['start_time'],
+                                                                            region['end_time'], split_level)
+
+    # Put mesh bounds in format required by fit_to_bounds
+    mesh_bounds = [[region["lat_min"], region["long_min"]], [region["lat_max"], region["long_max"]]]
+
+    mp = Map(title=output,basemap=basemap, **kwargs)
+
+    # Plot maps of mesh info
+    if 'cx' in mesh.columns:
+        logging.debug('Plotting mesh grid')
+        mp.Maps(mesh, 'MeshGrid', predefined='cx')
+    if 'SIC' in mesh.columns:
+        logging.debug("Plotting Sea Ice Concentration")
+        mp.Maps(mesh, 'SIC', predefined='SIC')
+    if 'ext_ice' in mesh.columns:
+        logging.debug("Plotting Extreme Ice areas")
+        mp.Maps(mesh, 'Extreme Ice', predefined='Extreme Sea Ice Conc')
+    if 'land' in mesh.columns:
+        logging.debug("Plotting Land Mask")
+        mp.Maps(mesh, 'Land Mask', predefined='Land Mask')
+    if 'shallow' in mesh.columns:
+        logging.debug("Plotting shallow areas")
+        mp.Maps(mesh, 'Shallows', predefined='Shallows')
+    if 'elevation' in mesh.columns:
+        logging.debug("Plotting elevation")
+        mp.Maps(mesh, 'Elevation', predefined='Elev', show=False)
+    if 'fuel' in mesh.columns:
+        logging.debug('Plotting Fuel usage per day and tCO2e')
+        mp.Maps(mesh, 'Fuel', predefined='Fuel (Tonnes/Day)', show=False)
+        mp.Maps(mesh, 'tCO2e', predefined='tCO2e', show=False)
+    if 'battery' in mesh.columns:
+        logging.debug('Plotting battery usage')
+        mp.Maps(mesh, 'Battery Usage', predefined='Battery Usage', show=False)
+    if 'speed' in mesh.columns:
+        logging.debug('Plotting vessel maximum speed')
+        mp.Maps(mesh, 'Max Speed', predefined='Max Speed (knots)', show=False)
+    if ('uC' in mesh.columns) and ('vC' in mesh.columns):
+        mesh['mC'] = np.sqrt(mesh['uC']**2 + mesh['vC']**2)
+        logging.debug('Plotting currents')
+        mp.Vectors(mesh,'Currents', show=False, predefined='Currents')
+    if ('u10' in mesh.columns) and ('v10' in mesh.columns):
+        mesh['m10'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
+        mp.Vectors(mesh, 'Winds', predefined='Winds', show=False)
+        mp.Maps(mesh, 'Wind Speed', predefined='Wind Speed', show=False)
+        logging.debug('Plotting winds')
+    if 'swh' in mesh.columns:
+        logging.debug("Plotting Significant Wave Height")
+        mp.Maps(mesh, 'Significant Wave Height', predefined='Significant Wave Height')
+    if 'hmax' in mesh.columns:
+        logging.debug("Plotting Max Wave Height")
+        mp.Maps(mesh, 'Max Wave Height', predefined='Max Wave Height', show=False)
+    if 'mwd' in mesh.columns:
+        logging.debug("Plotting Mean Wave Direction")
+        mp.Maps(mesh, 'Mean Wave Direction', predefined='Wave Direction', show=False)
+    if 'mwp' in mesh.columns:
+        logging.debug("Plotting Mean Wave Period")
+        mp.Maps(mesh, 'Mean Wave Period', predefined='Wave Period', show=False)
+    if 'wind_dir' in mesh.columns:
+        logging.debug("Plotting Wind Direction")
+        mp.Maps(mesh, 'Wind Direction', predefined='Wind Direction', show=False)
+    if 'wind_mag' in mesh.columns:
+        logging.debug("Plotting Wind Magnitude")
+        mp.Maps(mesh, 'Wind Magnitude', predefined='Wind Magnitude', show=False)
+    if ('uW' in mesh.columns) and ('vW' in mesh.columns):
+        mp.Vectors(mesh, 'Wave Direction', predefined='Wave Direction', show=False)
+        logging.debug('Plotting wave direction')
+    if 'ext_waves' in mesh.columns:
+        logging.debug("Plotting Extreme Wave areas")
+        mp.Maps(mesh, 'Extreme Waves', predefined='Extreme Waves')
+    if 'offshore_platforms' in mesh.columns:
+        logging.debug("Plotting Offshore Platforms")
+        mp.Maps(mesh, 'Offshore Platforms', predefined='Offshore Platforms')
+
+    # Plot routes and waypoints
+    if 'paths' in info.keys():
+        logging.debug('Plotting paths')
+        paths = info['paths']
+        mp.Paths(paths, 'Route - Traveltime', predefined='Traveltime (Days)')
+        mp.Paths(paths, 'Route - Distance', predefined='Distance (Nautical miles)', show=False)
+        mp.Paths(paths, 'Route - Max Speed', predefined='Max Speed (knots)', show=False)
+        if 'fuel' in mesh.columns:
+            mp.Paths(paths, 'Route - Fuel', predefined='Fuel', show=False)
+            mp.Paths(paths, 'Route - tCO2e', predefined='tCO2e', show=False)
+        if 'battery' in mesh.columns:
+            mp.Paths(paths, 'Route - Battery', predefined='Battery', show=False)
+    if 'waypoints' in info.keys():
+        logging.debug('Plotting waypoints')
+        waypoints = pd.DataFrame(info['waypoints'])
+        mp.Points(waypoints, 'Waypoints', names={"font_size":10.0})
+
+    if mesh_info:
+        mp.MeshInfo(mesh, 'Mesh Info', show=False)
+
+    mp.fit_to_bounds(mesh_bounds)
+
+    return mp

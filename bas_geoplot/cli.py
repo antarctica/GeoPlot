@@ -36,6 +36,8 @@ def get_args(default_output: str):
     ap.add_argument("-a", "--arrows", default=False, action="store_true",
                     help="Add directional arrows to routes")
     ap.add_argument("--custom_title", default="", help="Add a custom title to the plot")
+    ap.add_argument("-b", "--no_basemap", default=False, action="store_true",
+                    help="Remove basemap from html")
 
     return ap.parse_args()
 
@@ -69,6 +71,9 @@ def plot_mesh_cli():
     # Put mesh bounds in format required by fit_to_bounds
     mesh_bounds = [[region["lat_min"], region["long_min"]], [region["lat_max"], region["long_max"]]]
 
+    # Determine whether to plot basemap
+    basemap = not args.no_basemap
+
     # Initialise Map object
     if args.offline_filepath != '':
         logging.debug("Offline .js & .css datastore - {}".format(args.offline_filepath))
@@ -80,7 +85,7 @@ def plot_mesh_cli():
         if args.coastlines != '':
             mp = Map(title=output, offline_coastlines=args.coastlines)
         else:
-            mp = Map(title=output)
+            mp = Map(title=output, basemap=basemap)
 
     # Plot maps of mesh info
     if 'cx' in mesh.columns:
@@ -123,7 +128,7 @@ def plot_mesh_cli():
                                 (currents['cy'] <=  info['config']['mesh_info']['region']['lat_max'] )
             ].reset_index(drop=True)
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
-        mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
+        mp.Vectors(mesh,'Currents', show=False, predefined='Currents')
     if ('u10' in mesh.columns) and ('v10' in mesh.columns):
         mesh['m10'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
         mp.Vectors(mesh, 'Winds', predefined='Winds', show=False)
@@ -180,15 +185,13 @@ def plot_mesh_cli():
         filetype = args.route.split('.')[-1]
         if filetype == 'gpx':
             route_json = gpx_route_import(args.route)
-            
             mp.Paths(route_json, 'User Route - GPX', predefined='black', arrows=args.arrows)
         elif filetype in ['json', 'geojson']:
             route_json = json.load(open(args.route))
             mp.Paths(route_json, 'User Route - Traveltime', predefined='black', arrows=args.arrows)
             mp.Paths(route_json, 'User Route - Fuel', predefined='green', show=False, arrows=args.arrows)
         else:
-            raise NameError("User defined route needs to be GPX or GeoJSON file!")
-
+            raise ValueError("User defined route needs to be GPX or GeoJSON file!")
 
     # Set-up mesh info and save map to html file
     mp.MeshInfo(mesh, 'Mesh Info', show=False)

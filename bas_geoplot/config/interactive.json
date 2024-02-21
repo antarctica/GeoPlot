@@ -2,6 +2,7 @@
         "zoom_start":2.6,
         "plot_title":true,
         "title":null,
+        "basemap":true,
         "offline_coastlines":null,
         "offline_filepath":null
     },
