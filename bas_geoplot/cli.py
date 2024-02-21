@@ -128,7 +128,7 @@ def plot_mesh_cli():
                                 (currents['cy'] <=  info['config']['mesh_info']['region']['lat_max'] )
             ].reset_index(drop=True)
             mp.Vectors(currents,'Currents - Raw Data', show=False, predefined='Currents')
-        mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
+        mp.Vectors(mesh,'Currents', show=False, predefined='Currents')
     if ('u10' in mesh.columns) and ('v10' in mesh.columns):
         mesh['m10'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
         mp.Vectors(mesh, 'Winds', predefined='Winds', show=False)

@@ -660,17 +660,26 @@ class Map:
             )
         ).add_to(feature_info)
 
-def plot_mesh(mesh_filename,basemap=False,**kwargs):
 
-    if type(mesh_filename) == str:
-        with open(mesh_filename,'r') as fl:
+def plot_mesh(mesh_filename, basemap=False, **kwargs):
+    """
+        Takes in a mesh and returns a Map object plotting a selection of common data interactively.
+
+        Args:
+            mesh_filename (str or dict): Input mesh as either a file path or dictionary
+            basemap (bool): Determine whether to plot the openstreetmap basemap layer
+        Returns:
+            mp (Map): Interactive Map object with all relevant data plotted on it
+    """
+
+    if isinstance(mesh_filename, str):
+        with open(mesh_filename, 'r') as fl:
             info = json.load(fl)
-
+    elif isinstance(mesh_filename, dict):
+        info = mesh_filename
     else:
-        if  type(mesh_filename) != dict:
-            raise Exception('Either Filename as string or dict object is needed !')
-        else:
-            info = mesh_filename
+        raise TypeError('Input to plot_mesh should be either a filename as a string or a dict object!')
+
     mesh = pd.DataFrame(info['cellboxes'])
     region = info['config']['mesh_info']['region']
     split_level = info['config']['mesh_info']['splitting']['split_depth']
@@ -717,7 +726,7 @@ def plot_mesh(mesh_filename,basemap=False,**kwargs):
     if ('uC' in mesh.columns) and ('vC' in mesh.columns):
         mesh['mC'] = np.sqrt(mesh['uC']**2 + mesh['vC']**2)
         logging.debug('Plotting currents')
-        mp.Vectors(mesh,'Currents - Mesh', show=False, predefined='Currents')
+        mp.Vectors(mesh,'Currents', show=False, predefined='Currents')
     if ('u10' in mesh.columns) and ('v10' in mesh.columns):
         mesh['m10'] = np.sqrt(mesh['u10'] ** 2 + mesh['v10'] ** 2)
         mp.Vectors(mesh, 'Winds', predefined='Winds', show=False)
@@ -767,5 +776,7 @@ def plot_mesh(mesh_filename,basemap=False,**kwargs):
         logging.debug('Plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])
         mp.Points(waypoints, 'Waypoints', names={"font_size":10.0})
+
+    mp.fit_to_bounds(mesh_bounds)
 
     return mp
