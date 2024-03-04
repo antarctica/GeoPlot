@@ -66,10 +66,13 @@ class Map:
 
         self.ax.set_extent([p["bounds"][0][0]+1e-6,p["bounds"][1][0]-1e-6,
                             p["bounds"][0][1]+1e-6,p["bounds"][1][1]-1e-6], crs=ccrs.PlateCarree())
-        self.ax.add_image(cimgt.GoogleTiles(), 3)
-        self.ax.coastlines(resolution='50m')
+        
+        if p['map']:
+            self.ax.add_image(cimgt.GoogleTiles(), 3)
+            self.ax.coastlines(resolution='50m')
+            self.ax.add_feature(cfeature.BORDERS)
         self.ax.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False,linewidth=0.5,linestyle='--')
-        self.ax.add_feature(cfeature.BORDERS)
+        
         plt.title(r'{}'.format(title),fontsize=14,loc='left',color='blue')
 
 

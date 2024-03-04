@@ -3,7 +3,8 @@
         "pole_centre":[-50.0,-90],
         "bounds": [[-120.0,-80.0],[-10.0,-50.0]],
         "title":null,
-        "figure_size":[15,15]
+        "figure_size":[15,15],
+        "map":true
     },
     "Points":{
         "color":"black",
