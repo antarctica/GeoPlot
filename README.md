@@ -20,7 +20,7 @@ pip install bas-geoplot
 Installation from source:
 ```
 git clone https://github.com/Antarctica/Geoplot
-pip install -e ./GeoPlot
+pip install -e ./Geoplot
 ```
 
 Use of `-e` is optional, based on whether you want to be able to edit the installed copy of the package.
