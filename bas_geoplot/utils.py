@@ -138,7 +138,16 @@ def gpx_route_import(f_name):
     return geojson
 
 def split_at_antimeridian(gdf):
+    """
+    Splits a cellbox at the antimeridian into two seperate polygons, and 
+    combines them into a MultiPolygon. Also adds a wavy edge to the antimeridian
+    side in order to denote a continuous cellbox on each side of the antimeridian
+    """
     def create_ellipse(centre=(0,0), semi_x_y=(1,1)):
+        """
+        Creates a shapely object of an ellipse centred at 'centre', 
+        and with semi major/minor axes of 'semi_x_y'
+        """
         circ = Point(centre).buffer(0.5)
         ellipse = shapely.affinity.scale(circ, semi_x_y[0], semi_x_y[1])
         return ellipse
@@ -149,10 +158,12 @@ def split_at_antimeridian(gdf):
         # If crosses the antimeridian
         if xx[0] > xx[2]:
             # Split into two polygons at the antimeridian
+            # Replace new cellbox boundary with positive antimeridian
             xs = xx.tolist()
             xs[2] = 180
             xs[3] = 180
             poly_a = Polygon(zip(xs, yy))
+            # Replace other new cellbox boundary with negative antimeridian
             xs = xx.tolist()
             xs[0] = -180
             xs[1] = -180
@@ -162,11 +173,12 @@ def split_at_antimeridian(gdf):
             # Create wavy line to represent a cellbox that goes over antimeridian
             cb_height = yy[1] - yy[0]
             cb_width = 180 - xx[0]
+            # Create two scaled ellipses along the cellbox boundary on the antimeridian
             ellipse_a_1 = create_ellipse(centre = (180, yy[0] + 0.75*cb_height), 
                                          semi_x_y=(cb_width*0.25, cb_height*0.5))
             ellipse_a_2 = create_ellipse(centre = (180, yy[0] + 0.25*cb_height), 
                                          semi_x_y=(cb_width*0.25, cb_height*0.5))
-            
+            # Do same on negative boundary
             cb_width = 180 + xx[2]
             ellipse_b_1 = create_ellipse(centre = (-180, yy[0] + 0.75*cb_height), 
                                          semi_x_y=(cb_width*0.25, cb_height*0.5))
@@ -178,7 +190,7 @@ def split_at_antimeridian(gdf):
 
             # Combine into a multipolygon and replace original
             new_polygon = MultiPolygon([poly_a, poly_b])
-            
+            # Replace the cellbox in place in the original dataframe
             gdf.loc[idx, 'geometry'] = new_polygon
     
     return gdf
