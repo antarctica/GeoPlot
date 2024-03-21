@@ -15,7 +15,7 @@ from shapely import wkt
 from shapely.geometry import Polygon
 from jinja2 import Template
 from pyproj import Geod
-from bas_geoplot.utils import convert_decimal_days
+from bas_geoplot.utils import convert_decimal_days, split_at_antimeridian
 
 
 def params_object(layer, predefined=None, **kwargs):
@@ -496,7 +496,8 @@ class Map:
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
-
+        # Split cellboxes into multipolygons if crosses antimeridian
+        dataframe_pandas = split_at_antimeridian(dataframe_pandas)
         # Don't plot anything in the land cells unless, of course, we are plotting the land mask
         if 'land' in dataframe_pandas.keys() and p['data_name'] != 'land':
             dataframe_pandas = dataframe_pandas[dataframe_pandas['land']==False].reset_index(drop=True)
@@ -621,6 +622,7 @@ class Map:
         dataframe_pandas = copy.copy(pd.DataFrame(mesh))
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
+        dataframe_geo = split_at_antimeridian(dataframe_geo)
 
         p = p['fields']
 

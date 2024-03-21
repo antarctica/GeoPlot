@@ -5,7 +5,8 @@ import numpy as np
 import geopandas as gpd
 import json
 from functools import wraps
-
+from shapely.geometry import Polygon, MultiPolygon, Point
+import shapely
 
 def memory_trace(func):
     @wraps(func)
@@ -136,3 +137,48 @@ def gpx_route_import(f_name):
 
     return geojson
 
+def split_at_antimeridian(gdf):
+    def create_ellipse(centre=(0,0), semi_x_y=(1,1)):
+        circ = Point(centre).buffer(0.5)
+        ellipse = shapely.affinity.scale(circ, semi_x_y[0], semi_x_y[1])
+        return ellipse
+    
+    # Split cellboxes that cross the antimeridian into multipolygons on each side
+    for idx, row in gdf.iterrows():
+        xx, yy = row['geometry'].exterior.coords.xy
+        # If crosses the antimeridian
+        if xx[0] > xx[2]:
+            # Split into two polygons at the antimeridian
+            xs = xx.tolist()
+            xs[2] = 180
+            xs[3] = 180
+            poly_a = Polygon(zip(xs, yy))
+            xs = xx.tolist()
+            xs[0] = -180
+            xs[1] = -180
+            xs[4] = -180
+            poly_b = Polygon(zip(xs, yy))
+            
+            # Create wavy line to represent a cellbox that goes over antimeridian
+            cb_height = yy[1] - yy[0]
+            cb_width = 180 - xx[0]
+            ellipse_a_1 = create_ellipse(centre = (180, yy[0] + 0.75*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            ellipse_a_2 = create_ellipse(centre = (180, yy[0] + 0.25*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            
+            cb_width = 180 + xx[2]
+            ellipse_b_1 = create_ellipse(centre = (-180, yy[0] + 0.75*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            ellipse_b_2 = create_ellipse(centre = (-180, yy[0] + 0.25*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            # Add/subtract ellipses from antimeridian line
+            poly_a = poly_a.union(ellipse_a_1).difference(ellipse_a_2)
+            poly_b = poly_b.union(ellipse_b_2).difference(ellipse_b_1)
+
+            # Combine into a multipolygon and replace original
+            new_polygon = MultiPolygon([poly_a, poly_b])
+            
+            gdf.loc[idx, 'geometry'] = new_polygon
+    
+    return gdf
