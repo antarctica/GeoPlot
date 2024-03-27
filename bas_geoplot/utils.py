@@ -154,23 +154,17 @@ def split_at_antimeridian(gdf):
     
     # Split cellboxes that cross the antimeridian into multipolygons on each side
     for idx, row in gdf.iterrows():
-        xx, yy = row['geometry'].exterior.coords.xy
-        # If crosses the antimeridian
-        if xx[0] > xx[2]:
-            # Split into two polygons at the antimeridian
-            # Replace new cellbox boundary with positive antimeridian
-            xs = xx.tolist()
-            xs[2] = 180
-            xs[3] = 180
-            poly_a = Polygon(zip(xs, yy))
-            # Replace other new cellbox boundary with negative antimeridian
-            xs = xx.tolist()
-            xs[0] = -180
-            xs[1] = -180
-            xs[4] = -180
-            poly_b = Polygon(zip(xs, yy))
+        shape = row['geometry']
+        # If it crosses antimeridian, it will be a multipolygon
+        if shape.geom_type == 'MultiPolygon':
+            polygons = list(shape.geoms)
+            
+
+            poly_a = polygons[0]
+            poly_b = polygons[1]
             
             # Create wavy line to represent a cellbox that goes over antimeridian
+            xx, yy = poly_a.exterior.coords.xy
             cb_height = yy[1] - yy[0]
             cb_width = 180 - xx[0]
             # Create two scaled ellipses along the cellbox boundary on the antimeridian
@@ -179,6 +173,7 @@ def split_at_antimeridian(gdf):
             ellipse_a_2 = create_ellipse(centre = (180, yy[0] + 0.25*cb_height), 
                                          semi_x_y=(cb_width*0.25, cb_height*0.5))
             # Do same on negative boundary
+            xx, yy = poly_b.exterior.coords.xy
             cb_width = 180 + xx[2]
             ellipse_b_1 = create_ellipse(centre = (-180, yy[0] + 0.75*cb_height), 
                                          semi_x_y=(cb_width*0.25, cb_height*0.5))
