@@ -15,7 +15,7 @@ from shapely import wkt
 from shapely.geometry import Polygon
 from jinja2 import Template
 from pyproj import Geod
-from bas_geoplot.utils import convert_decimal_days
+from bas_geoplot.utils import convert_decimal_days, split_at_antimeridian
 
 
 def params_object(layer, predefined=None, **kwargs):
@@ -353,10 +353,42 @@ class Map:
         # Determining max travel-times of all paths
         for path in paths:
             points   = np.array(path['geometry']['coordinates'])
+            # Get index of any consecutive points that span over 180 deg in longitude
+            # i.e. get index of places which cross the antimeridian
+            split_at_idxs = [i + 1 for i in range(len(points)-1)
+                             if (np.abs(points[i][0] - points[i+1][0]) >= 180) ]
+            
+            segments = np.split(points, split_at_idxs)
+            extended_segments = []
+            for i, segment in enumerate(segments):
+
+                # If not the first segment, add the last point of the previous segment
+                # to the beginning of this segment to better visualise the path 
+                if i != 0:
+                    # Let this singular point be on the opposite side of the antimeridian
+                    orig_coords = segments[i-1][-1]
+                    if orig_coords[0] > 0: 
+                        rollover_coords = [orig_coords[0] - 360, orig_coords[1]]
+                    else:
+                        rollover_coords = [orig_coords[0] + 360, orig_coords[1]]
+                    
+                    segment = np.insert(segment, 0, rollover_coords, axis=0)
+                # If not the last segment, add the first point of the next segment
+                # to the end of this segment to better visualise the path 
+                if i != len(segments)-1:
+                    # Let this singular point be on the opposite side of the antimeridian
+                    orig_coords = segments[i+1][0]
+                    if orig_coords[0] > 0: 
+                        rollover_coords = [orig_coords[0] - 360, orig_coords[1]]
+                    else:
+                        rollover_coords = [orig_coords[0] + 360, orig_coords[1]]
+                    
+                    segment = np.insert(segment, -1, rollover_coords, axis=0)
+                # Add to list of 'extended' segments
+                extended_segments += [segment]
 
             start_wpt = path['properties']['from']
             end_wpt   = path['properties']['to']
-
             if p['data_name']:
                 try:
                     data_val = np.array(path['properties'][p['data_name']])*p['scaling_factor']
@@ -364,75 +396,81 @@ class Map:
                     continue
             else:
                 data_val = np.array(len(points))
-
+            
             # Find the max value for this path for display in pop-up
             path_max = np.max(data_val)
+            # For each series of points in each segment (defined by crossing antimeridian)
+            for points in extended_segments:
 
-            points[:,0] = points[:,0]
-            points = points[:,::-1]
+                points[:,0] = points[:,0]
+                points = points[:,::-1]
 
-            if type(p['line_color']) is dict:
-                if "cmin" in p["line_color"].keys():
-                    min_val = p["line_color"]['cmin']
-                if "cmax" in p["line_color"].keys():
-                    max_val = p["line_color"]['cmax']
+                if type(p['line_color']) is dict:
+                    if "cmin" in p["line_color"].keys():
+                        min_val = p["line_color"]['cmin']
+                    if "cmax" in p["line_color"].keys():
+                        max_val = p["line_color"]['cmax']
 
-                colormap = linear._colormaps[p["line_color"]['color']].scale(min_val,max_val)
-                if p['unit'] == 'Days':
-                    colormap.caption = '{} ({}, Max Value: {})'.format(name, p['unit'], convert_decimal_days(max_val))
+                    colormap = linear._colormaps[p["line_color"]['color']].scale(min_val,max_val)
+                    if p['unit'] == 'Days':
+                        colormap.caption = '{} ({}, Max Value: {})'.format(name, p['unit'], convert_decimal_days(max_val))
+                    else:
+                        colormap.caption = '{} ({}, Max Value: {:.3f})'.format(name,p['unit'],max_val)
+                    folium.ColorLine(points,data_val, colormap=colormap,nb_steps=50, weight=p['line_width'],
+                                    opacity=p['line_opacity']).add_to(pths)
+
+                    if p['unit'] == 'Days':
+                        folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
+                                        popup = "Path - {} to {}\n{} = {}".format(start_wpt, end_wpt, p['data_name'],
+                                                                                convert_decimal_days(path_max))
+                                        ).add_to(pths)
+                    else:
+                        folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
+                                        popup="Path - {} to {}\n{} = {:.3f} {}".format(start_wpt, end_wpt, p['data_name'],
+                                                                                    path_max, p['unit'])).add_to(pths)
+
+                    if arrows:
+                        # Every 10 segments, draw a triangle as an arrow head
+                        for idx in range(1, len(points), 10):
+                            lon_diff = points[idx, 0] - points[idx-1, 0]
+                            lat_diff = points[idx, 1] - points[idx-1, 1]
+                            loc = [points[idx,0],points[idx,1]]
+                            heading = -np.degrees(np.arctan2(lon_diff, lat_diff))
+                            folium.RegularPolygonMarker(location=loc, rotation=heading,
+                                                        color=colormap(data_val[idx]), fill=True,
+                                                        number_of_sides=3, radius=10).add_to(pths)
+
                 else:
-                    colormap.caption = '{} ({}, Max Value: {:.3f})'.format(name,p['unit'],max_val)
-                folium.ColorLine(points,data_val, colormap=colormap,nb_steps=50, weight=p['line_width'],
-                                 opacity=p['line_opacity']).add_to(pths)
+                    folium.PolyLine(points, color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],
+                                    popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
 
-                if p['unit'] == 'Days':
-                    folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
-                                    popup = "Path - {} to {}\n{} = {}".format(start_wpt, end_wpt, p['data_name'],
-                                                                              convert_decimal_days(path_max))
-                                    ).add_to(pths)
-                else:
-                    folium.PolyLine(points, color='black', weight=p['line_width'], opacity=0.0,
-                                    popup="Path - {} to {}\n{} = {:.3f} {}".format(start_wpt, end_wpt, p['data_name'],
-                                                                                   path_max, p['unit'])).add_to(pths)
+                    if arrows:
+                        # Every 10 segments, draw a triangle as an arrow head
+                        for idx in range(1, len(points), 10):
+                            lon_diff = points[idx, 0] - points[idx-1, 0]
+                            lat_diff = points[idx, 1] - points[idx-1, 1]
+                            loc = [points[idx,0],points[idx,1]]
+                            heading = -np.degrees(np.arctan2(lon_diff, lat_diff))
+                            folium.RegularPolygonMarker(location=loc, rotation=heading,
+                                                        color=p['line_color'], fill=True,
+                                                        number_of_sides=3, radius=10).add_to(pths)
 
-                if arrows:
-                    # Every 10 segments, draw a triangle as an arrow head
-                    for idx in range(1, len(points), 10):
-                        lon_diff = points[idx, 0] - points[idx-1, 0]
-                        lat_diff = points[idx, 1] - points[idx-1, 1]
+                if p['path_points']:
+                    for idx in range(len(points)):
                         loc = [points[idx,0],points[idx,1]]
-                        heading = -np.degrees(np.arctan2(lon_diff, lat_diff))
-                        folium.RegularPolygonMarker(location=loc, rotation=heading,
-                                                    color=colormap(data_val[idx]), fill=True,
-                                                    number_of_sides=3, radius=10).add_to(pths)
+                        folium.Marker(
+                            location=loc,
+                            icon=folium.plugins.BeautifyIcon(icon='circle',
+                                                        border_color='transparent',
+                                                        background_color='transparent',
+                                                        border_width=1,
+                                                        text_color='black',
+                                                        inner_icon_style='margin:0px;font-size:0.8em')
+                        ).add_to(pths)
 
-            else:
-                folium.PolyLine(points, color=p['line_color'], weight=p['line_width'], opacity=p['line_opacity'],
-                                popup = "Path - {} to {}".format(start_wpt,end_wpt)).add_to(pths)
-
-                if arrows:
-                    # Every 10 segments, draw a triangle as an arrow head
-                    for idx in range(1, len(points), 10):
-                        lon_diff = points[idx, 0] - points[idx-1, 0]
-                        lat_diff = points[idx, 1] - points[idx-1, 1]
-                        loc = [points[idx,0],points[idx,1]]
-                        heading = -np.degrees(np.arctan2(lon_diff, lat_diff))
-                        folium.RegularPolygonMarker(location=loc, rotation=heading,
-                                                    color=p['line_color'], fill=True,
-                                                    number_of_sides=3, radius=10).add_to(pths)
-
-            if p['path_points']:
-                for idx in range(len(points)):
-                    loc = [points[idx,0],points[idx,1]]
-                    folium.Marker(
-                        location=loc,
-                        icon=folium.plugins.BeautifyIcon(icon='circle',
-                                                    border_color='transparent',
-                                                    background_color='transparent',
-                                                    border_width=1,
-                                                    text_color='black',
-                                                    inner_icon_style='margin:0px;font-size:0.8em')
-                    ).add_to(pths)
+                # Truncate data_val to not include the first n points so that colourmap is continuous
+                # over the antimeridian
+                data_val = data_val[len(points)-1:]
         
         if type(p['line_color']) is dict:
             self.map.add_child(colormap)
@@ -496,7 +534,8 @@ class Map:
 
         dataframe_pandas = copy.copy(dataframe_pandas)
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
-
+        # Split cellboxes into multipolygons if crosses antimeridian
+        dataframe_pandas = split_at_antimeridian(dataframe_pandas)
         # Don't plot anything in the land cells unless, of course, we are plotting the land mask
         if 'land' in dataframe_pandas.keys() and p['data_name'] != 'land':
             dataframe_pandas = dataframe_pandas[dataframe_pandas['land']==False].reset_index(drop=True)
@@ -621,6 +660,7 @@ class Map:
         dataframe_pandas = copy.copy(pd.DataFrame(mesh))
         dataframe_pandas['geometry'] = dataframe_pandas['geometry'].apply(wkt.loads)
         dataframe_geo = gpd.GeoDataFrame(dataframe_pandas,crs='EPSG:4326', geometry='geometry')
+        dataframe_geo = split_at_antimeridian(dataframe_geo)
 
         p = p['fields']
 

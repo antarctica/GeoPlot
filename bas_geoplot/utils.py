@@ -5,7 +5,8 @@ import numpy as np
 import geopandas as gpd
 import json
 from functools import wraps
-
+from shapely.geometry import Polygon, MultiPolygon, Point
+import shapely
 
 def memory_trace(func):
     @wraps(func)
@@ -136,3 +137,55 @@ def gpx_route_import(f_name):
 
     return geojson
 
+def split_at_antimeridian(gdf):
+    """
+    Splits a cellbox at the antimeridian into two seperate polygons, and 
+    combines them into a MultiPolygon. Also adds a wavy edge to the antimeridian
+    side in order to denote a continuous cellbox on each side of the antimeridian
+    """
+    def create_ellipse(centre=(0,0), semi_x_y=(1,1)):
+        """
+        Creates a shapely object of an ellipse centred at 'centre', 
+        and with semi major/minor axes of 'semi_x_y'
+        """
+        circ = Point(centre).buffer(0.5)
+        ellipse = shapely.affinity.scale(circ, semi_x_y[0], semi_x_y[1])
+        return ellipse
+    
+    # Split cellboxes that cross the antimeridian into multipolygons on each side
+    for idx, row in gdf.iterrows():
+        shape = row['geometry']
+        # If it crosses antimeridian, it will be a multipolygon
+        if shape.geom_type == 'MultiPolygon':
+            polygons = list(shape.geoms)
+            
+
+            poly_a = polygons[0]
+            poly_b = polygons[1]
+            
+            # Create wavy line to represent a cellbox that goes over antimeridian
+            xx, yy = poly_a.exterior.coords.xy
+            cb_height = yy[1] - yy[0]
+            cb_width = 180 - xx[0]
+            # Create two scaled ellipses along the cellbox boundary on the antimeridian
+            ellipse_a_1 = create_ellipse(centre = (180, yy[0] + 0.75*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            ellipse_a_2 = create_ellipse(centre = (180, yy[0] + 0.25*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            # Do same on negative boundary
+            xx, yy = poly_b.exterior.coords.xy
+            cb_width = 180 + xx[2]
+            ellipse_b_1 = create_ellipse(centre = (-180, yy[0] + 0.75*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            ellipse_b_2 = create_ellipse(centre = (-180, yy[0] + 0.25*cb_height), 
+                                         semi_x_y=(cb_width*0.25, cb_height*0.5))
+            # Add/subtract ellipses from antimeridian line
+            poly_a = poly_a.union(ellipse_a_1).difference(ellipse_a_2)
+            poly_b = poly_b.union(ellipse_b_2).difference(ellipse_b_1)
+
+            # Combine into a multipolygon and replace original
+            new_polygon = MultiPolygon([poly_a, poly_b])
+            # Replace the cellbox in place in the original dataframe
+            gdf.loc[idx, 'geometry'] = new_polygon
+    
+    return gdf
