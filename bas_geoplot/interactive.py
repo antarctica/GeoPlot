@@ -397,11 +397,10 @@ class Map:
             else:
                 data_val = np.array(len(points))
             
+            # Find the max value for this path for display in pop-up
+            path_max = np.max(data_val)
             # For each series of points in each segment (defined by crossing antimeridian)
             for points in extended_segments:
-
-                # Find the max value for this path for display in pop-up
-                path_max = np.max(data_val)
 
                 points[:,0] = points[:,0]
                 points = points[:,::-1]
