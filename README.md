@@ -58,12 +58,9 @@ optional arguments are:
 
 ## Development & Contributions
 Development of software package is conducted by the [BAS AI Lab](https://www.bas.ac.uk/team/science-teams/ai-lab/).
-
-For contributions and feature additions please contact [polarroute@bas.ac.uk](polarroute@bas.ac.uk).
-
+For contributions and feature additions please contact [amop@bas.ac.uk](amop@bas.ac.uk).
 
 ## License
 Distributed under the MIT license. See ``LICENSE`` for more information.
-
 [version]: https://img.shields.io/GeoPlot/v/datadog-metrics.svg?style=flat-square
 [downloads]: https://img.shields.io/GeoPlot/dm/datadog-metrics.svg?style=flat-square
