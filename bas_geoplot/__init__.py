@@ -1,5 +1,4 @@
 name = "bas_geoplot"
-__description__ = "GeoPlot: BAS AI Lab plotting scripts built on Folium"
 __version__ = "0.1.0"
 __description__ = "GeoPlot: BAS AI Lab plotting scripts for internal plotting & visualisation"
 __license__ = "MIT"
