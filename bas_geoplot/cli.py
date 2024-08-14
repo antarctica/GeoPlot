@@ -33,6 +33,7 @@ def get_args(default_output: str):
     ap.add_argument("-t", "--rm_titlebar", default=False, action="store_true",
                     help="Remove titlebar from html")
     ap.add_argument("-r", "--route", default=None, help="Plot additional route on mesh")
+    ap.add_argument("-w", "--waypoints", default=None, help="Plot additional waypoints on mesh")
     ap.add_argument("-a", "--arrows", default=False, action="store_true",
                     help="Add directional arrows to routes")
     ap.add_argument("--custom_title", default="", help="Add a custom title to the plot")
@@ -179,6 +180,10 @@ def plot_mesh_cli():
         logging.debug('Plotting waypoints')
         waypoints = pd.DataFrame(info['waypoints'])
         mp.Points(waypoints, 'Waypoints', names={"font_size":10.0})
+    if args.waypoints:
+        logging.debug('Plotting user defined waypoints from csv file')
+        user_waypoints = pd.read_csv(args.waypoints)
+        mp.Points(user_waypoints, 'User Waypoints', names={"font_size": 10.0})
     if args.route:
         logging.debug('Plotting user defined route')
         # Read in as either GPX or GeoJSON

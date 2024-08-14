@@ -1,5 +1,5 @@
 name = "bas_geoplot"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __description__ = "GeoPlot: BAS AI Lab plotting scripts for internal plotting & visualisation"
 __license__ = "MIT"
 __author__ = "Autonomous Marine Operations Planning (AMOP) Team, AI Lab, British Antarctic Survey"
